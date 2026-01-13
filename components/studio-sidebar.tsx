@@ -3,7 +3,19 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle } from "lucide-react"
+import {
+  Sparkles,
+  Home,
+  Menu,
+  X,
+  FileText,
+  MapPin,
+  Users,
+  Coins,
+  Gem,
+  MessageCircle,
+  GraduationCap,
+} from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -66,14 +78,6 @@ export default function StudioSidebar() {
     gradient: "from-white to-gray-300",
   }
 
-  // const exploreApp = {
-  //   id: "explore",
-  //   name: "Explore",
-  //   icon: Globe,
-  //   href: "/explore",
-  //   gradient: "from-green-500 to-teal-600",
-  // }
-
   const apps = [
     // Music Platform
     {
@@ -82,14 +86,6 @@ export default function StudioSidebar() {
       icon: Users,
       href: "/bt",
       gradient: "from-amber-500 to-orange-600",
-    },
-    {
-      id: "stemplayer",
-      name: "BandCoin Studio",
-      icon: Radio,
-      href: "https://www.bandcoin.io/artist/studio",
-      gradient: "from-violet-500 to-pink-600",
-      external: true,
     },
     {
       id: "gigfinder",
@@ -120,20 +116,6 @@ export default function StudioSidebar() {
       href: "/my-collection",
       gradient: "from-purple-400 to-pink-500",
     },
-    // {
-    //   id: "merch",
-    //   name: "Merch Store",
-    //   icon: Shirt,
-    //   href: "/merch",
-    //   gradient: "from-orange-500 to-red-500",
-    // },
-    // {
-    //   id: "portfolio",
-    //   name: "Portfolio",
-    //   icon: Briefcase,
-    //   href: "/examples",
-    //   gradient: "from-amber-500 to-orange-600",
-    // },
     {
       id: "pubassist",
       name: "PubAssist",
@@ -141,6 +123,7 @@ export default function StudioSidebar() {
       href: "/pubassist",
       gradient: "from-emerald-500 to-green-600",
     },
+    // Platform/System
     {
       id: "chat",
       name: "Chat",
@@ -148,7 +131,6 @@ export default function StudioSidebar() {
       href: "/chat",
       gradient: "from-blue-400 to-indigo-500",
     },
-    // Platform/System
     {
       id: "buy-bandcoin",
       name: "Buy BandCoin",
@@ -163,13 +145,13 @@ export default function StudioSidebar() {
       href: "/rewards",
       gradient: "from-amber-400 to-orange-500",
     },
-    // {
-    //   id: "vault",
-    //   name: "Vault",
-    //   icon: Vault,
-    //   href: "/vault",
-    //   gradient: "from-amber-500 to-orange-600",
-    // },
+    {
+      id: "learn",
+      name: "Learn",
+      icon: GraduationCap,
+      href: "/learn",
+      gradient: "from-amber-400 to-orange-500",
+    },
   ]
 
   const renderNavItem = (app: typeof homeApp, isActive: boolean) => {
@@ -279,12 +261,6 @@ export default function StudioSidebar() {
             {/* Home */}
             {renderNavItem(homeApp, pathname === homeApp.href)}
 
-            {/* Explore */}
-            {/* {renderNavItem(
-              exploreApp,
-              pathname === exploreApp.href || (exploreApp.href !== "/" && pathname.startsWith(exploreApp.href)),
-            )} */}
-
             {/* Apps Section */}
             {!isCollapsed && (
               <div className="pt-4 pb-2">
@@ -292,7 +268,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(0, 4).map((app) => {
+            {apps.slice(0, 3).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -303,7 +279,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(4, 9).map((app) => {
+            {apps.slice(3, 7).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -314,7 +290,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(9).map((app) => {
+            {apps.slice(7).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
