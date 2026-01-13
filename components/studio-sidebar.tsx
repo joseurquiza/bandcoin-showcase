@@ -84,7 +84,8 @@ export default function StudioSidebar() {
       id: "bt",
       name: "Band Together",
       icon: Users,
-      href: "/bt",
+      href: "https://bandtogether.io",
+      external: true,
       gradient: "from-amber-500 to-orange-600",
     },
     {
