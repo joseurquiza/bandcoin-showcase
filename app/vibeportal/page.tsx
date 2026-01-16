@@ -296,23 +296,29 @@ const VibePortal = () => {
         return
       }
 
-      const processedFile = file
+      setReferenceImage(file)
 
-      // Check if file is HEIC and convert to JPEG
-      // Removed HEIC conversion logic to fix SSR build error
-
-      setReferenceImage(processedFile)
+      // Create initial preview
       const reader = new FileReader()
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const result = reader.result as string
         console.log("[v0] Data URL created, length:", result.length)
-        setReferencePreview(result)
+
+        // Compress if larger than 2MB to prevent 413 errors
+        if (result.length > 2 * 1024 * 1024) {
+          console.log("[v0] Compressing large image...")
+          const compressed = await compressImage(result, 1024, 0.8)
+          console.log("[v0] Compressed size:", compressed.length)
+          setReferencePreview(compressed)
+        } else {
+          setReferencePreview(result)
+        }
       }
       reader.onerror = () => {
         console.error("[v0] Error reading file")
         alert("Error reading file. Please try again.")
       }
-      reader.readAsDataURL(processedFile)
+      reader.readAsDataURL(file)
     }
   }
 

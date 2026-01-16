@@ -171,7 +171,6 @@ export default function StudioSidebar() {
         className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
           isActive ? "bg-white/10 text-white" : "text-white/60 hover:text-white hover:bg-white/5"
         }`}
-        title={isCollapsed ? app.name : undefined}
       >
         {isActive && (
           <div
@@ -186,9 +185,9 @@ export default function StudioSidebar() {
           />
         </div>
 
-        {!isCollapsed && (
-          <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis">{app.name}</span>
-        )}
+        <span className={`font-medium whitespace-nowrap ${isCollapsed ? "text-xs" : "overflow-hidden text-ellipsis"}`}>
+          {app.name}
+        </span>
 
         {!isCollapsed && "external" in app && app.external && (
           <svg
@@ -228,7 +227,7 @@ export default function StudioSidebar() {
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
-        style={{ width: isCollapsed ? "80px" : `${sidebarWidth}px` }}
+        style={{ width: isCollapsed ? "160px" : `${sidebarWidth}px` }}
         className={`fixed top-0 left-0 h-full bg-zinc-950 border-r border-white/10 backdrop-blur-xl z-40 transition-all duration-300 ${
           isCollapsed ? "-translate-x-full lg:translate-x-0" : "translate-x-0"
         }`}
@@ -248,12 +247,10 @@ export default function StudioSidebar() {
                 />
                 <div className="absolute inset-0 bg-white/10 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              {!isCollapsed && (
-                <div className="overflow-hidden">
-                  <h2 className="text-white font-bold text-lg whitespace-nowrap">BandCoin ShowCase</h2>
-                  <p className="text-white/40 text-xs whitespace-nowrap">Creative Platform</p>
-                </div>
-              )}
+              <div className={`overflow-hidden ${isCollapsed ? "hidden" : ""}`}>
+                <h2 className="text-white font-bold text-lg whitespace-nowrap">BandCoin ShowCase</h2>
+                <p className="text-white/40 text-xs whitespace-nowrap">Creative Platform</p>
+              </div>
             </Link>
           </div>
 
