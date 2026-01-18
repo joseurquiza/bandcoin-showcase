@@ -141,13 +141,7 @@ export default function StudioSidebar() {
       href: "/pubassist",
       gradient: "from-emerald-500 to-green-600",
     },
-    {
-      id: "chat",
-      name: "Chat",
-      icon: MessageCircle,
-      href: "/chat",
-      gradient: "from-blue-400 to-indigo-500",
-    },
+
     // Platform/System
     {
       id: "buy-bandcoin",
