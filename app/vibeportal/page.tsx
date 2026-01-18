@@ -133,10 +133,22 @@ const VibePortal = () => {
   const [isSyncing, setIsSyncing] = useState(false)
   const [dbSyncEnabled, setDbSyncEnabled] = useState(true)
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null)
+  const [userIdentifier, setUserIdentifier] = useState<string>("")
 
   // --- Load from localStorage AND database on mount ---
   useEffect(() => {
     const loadAssets = async () => {
+      // Get user identifier from cookies
+      const cookieStr = document.cookie
+      let userId = ""
+      
+      // Try to get session_id or vault_session cookie
+      const sessionMatch = cookieStr.match(/session_id=([^;]+)/)
+      const vaultMatch = cookieStr.match(/vault_session=([^;]+)/)
+      userId = sessionMatch?.[1] || vaultMatch?.[1] || "anonymous"
+      
+      setUserIdentifier(userId)
+      
       // Try to load lightweight cache from localStorage first (just IDs and URLs)
       const saved = localStorage.getItem("vibeportal-assets-cache")
       if (saved) {
@@ -157,7 +169,7 @@ const VibePortal = () => {
       if (dbSyncEnabled) {
         setIsSyncing(true)
         try {
-          const dbAssets = await loadAssetsFromDatabase()
+          const dbAssets = await loadAssetsFromDatabase(userId)
           if (dbAssets.length > 0) {
             const convertedAssets = dbAssets.map((dbAsset) => ({
               id: dbAsset.asset_id,
@@ -185,7 +197,7 @@ const VibePortal = () => {
     }
 
     loadAssets()
-  }, [])
+  }, [dbSyncEnabled])
 
   // --- Save to localStorage AND database when assets change ---
   useEffect(() => {
@@ -484,6 +496,10 @@ const VibePortal = () => {
 
   // --- Manual Sync Function ---
   const handleManualSync = async () => {
+    if (!userIdentifier) {
+      setStatusMessage("Please connect your wallet first")
+      return
+    }
     setIsSyncing(true)
     try {
       // Save all assets to database
@@ -496,6 +512,7 @@ const VibePortal = () => {
           vibe: asset.vibe,
           camera: asset.camera,
           timestamp: asset.timestamp,
+          user_identifier: userIdentifier,
         })
       }
       setLastSyncTime(new Date().toLocaleTimeString())
@@ -509,8 +526,8 @@ const VibePortal = () => {
 
   // --- Delete Function with Database Sync ---
   const handleDelete = async (assetId: string) => {
-    if (dbSyncEnabled) {
-      await deleteAssetFromDatabase(assetId)
+    if (dbSyncEnabled && userIdentifier) {
+      await deleteAssetFromDatabase(assetId, userIdentifier)
     }
     setGeneratedAssets((prev) => prev.filter((a) => a.id !== assetId))
     if (selectedAsset?.id === assetId) {
