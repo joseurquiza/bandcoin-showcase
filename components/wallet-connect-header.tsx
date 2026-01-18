@@ -203,22 +203,6 @@ export function WalletConnect() {
     console.log("[v0] Starting BandCoin Wallet (Freighter) connection...")
 
     try {
-      // First check if Freighter is installed
-      const installed = await freighter.isFreighterInstalled()
-      
-      if (!installed) {
-        console.log("[v0] Freighter not installed")
-        toast.error("Freighter Wallet not installed", {
-          description: "Please install Freighter browser extension from freighter.app",
-          action: {
-            label: "Get Freighter",
-            onClick: () => window.open("https://www.freighter.app/", "_blank"),
-          },
-        })
-        setConnecting(false)
-        return
-      }
-
       console.log("[v0] Requesting Freighter access...")
       const publicKey = await freighter.connect()
       console.log("[v0] Freighter connected, public key:", publicKey)
@@ -245,18 +229,8 @@ export function WalletConnect() {
       }
     } catch (error: any) {
       console.error("[v0] BandCoin Wallet connection error:", error)
-      
-      // Provide more specific error messages
-      let errorDesc = error.message || "Failed to connect BandCoin Wallet"
-      
-      if (error.message?.includes("not installed")) {
-        errorDesc = "Please install Freighter browser extension from freighter.app"
-      } else if (error.message?.includes("User declined")) {
-        errorDesc = "Connection request was declined"
-      }
-      
       toast.error("Connection failed", {
-        description: errorDesc,
+        description: error.message || "Failed to connect BandCoin Wallet. Please ensure Freighter is installed.",
       })
     } finally {
       setConnecting(false)

@@ -8,43 +8,33 @@ export function useFreighter() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const isFreighterInstalled = async () => {
-    try {
-      if (typeof window === "undefined") return false
-      
-      // Check if freighterApi exists and can be called
-      const result = await freighterApi.isConnected()
-      return result?.isConnected || false
-    } catch {
-      return false
-    }
-  }
-
   const connect = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      // Check if Freighter is installed
-      const installed = await isFreighterInstalled()
-      
-      if (!installed) {
-        throw new Error(
-          "Freighter wallet is not installed. Please install the Freighter browser extension from https://www.freighter.app/"
-        )
-      }
-
       // Use requestAccess to prompt user and get public key in one step
+      // This will also handle extension not installed errors from Freighter
       const accessResult = await freighterApi.requestAccess()
+      console.log("[v0] Freighter requestAccess result:", accessResult)
 
       if (accessResult.error) {
         throw new Error(accessResult.error)
       }
 
-      setPublicKey(accessResult.address)
-      return accessResult.address
+      // The response might be just the address string directly
+      const address = typeof accessResult === 'string' ? accessResult : accessResult.address
+      
+      if (!address) {
+        console.log("[v0] No address found in response. Full response:", JSON.stringify(accessResult))
+        throw new Error("No address returned from Freighter. Please unlock your wallet and try again.")
+      }
+
+      setPublicKey(address)
+      return address
     } catch (err: any) {
       const errorMessage = err?.message || "Failed to connect to Freighter"
+      console.error("[v0] Freighter connection error details:", err)
       setError(errorMessage)
       throw new Error(errorMessage)
     } finally {
@@ -64,6 +54,5 @@ export function useFreighter() {
     connect,
     disconnect,
     isConnected: !!publicKey,
-    isFreighterInstalled,
   }
 }
