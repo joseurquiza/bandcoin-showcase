@@ -8,15 +8,30 @@ export function useFreighter() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const isFreighterInstalled = async () => {
+    try {
+      if (typeof window === "undefined") return false
+      
+      // Check if freighterApi exists and can be called
+      const result = await freighterApi.isConnected()
+      return result?.isConnected || false
+    } catch {
+      return false
+    }
+  }
+
   const connect = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const connectionResult = await freighterApi.isConnected()
-
-      if (!connectionResult.isConnected) {
-        throw new Error("Freighter wallet is not installed. Please install Freighter extension.")
+      // Check if Freighter is installed
+      const installed = await isFreighterInstalled()
+      
+      if (!installed) {
+        throw new Error(
+          "Freighter wallet is not installed. Please install the Freighter browser extension from https://www.freighter.app/"
+        )
       }
 
       // Use requestAccess to prompt user and get public key in one step
@@ -49,5 +64,6 @@ export function useFreighter() {
     connect,
     disconnect,
     isConnected: !!publicKey,
+    isFreighterInstalled,
   }
 }
