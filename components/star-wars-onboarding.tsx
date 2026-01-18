@@ -245,10 +245,12 @@ export default function StarWarsOnboarding({ onComplete }: StarWarsOnboardingPro
 
         @keyframes crawl {
           0% {
-            transform: translateY(0) translateZ(0);
+            opacity: 1;
+            transform: translateY(0);
           }
           100% {
-            transform: translateY(-250%) translateZ(2000px);
+            opacity: 0;
+            transform: translateY(-100vh);
           }
         }
 
