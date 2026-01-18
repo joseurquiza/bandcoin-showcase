@@ -138,14 +138,25 @@ const VibePortal = () => {
   // --- Load from localStorage AND database on mount ---
   useEffect(() => {
     const loadAssets = async () => {
-      // Get user identifier from cookies
+      // Get user identifier from cookies or generate unique session
       const cookieStr = document.cookie
       let userId = ""
       
       // Try to get session_id or vault_session cookie
       const sessionMatch = cookieStr.match(/session_id=([^;]+)/)
       const vaultMatch = cookieStr.match(/vault_session=([^;]+)/)
-      userId = sessionMatch?.[1] || vaultMatch?.[1] || "anonymous"
+      
+      if (sessionMatch?.[1] || vaultMatch?.[1]) {
+        userId = sessionMatch?.[1] || vaultMatch?.[1]
+      } else {
+        // No cookies found - generate unique session ID for this browser session
+        let sessionId = sessionStorage.getItem("vibeportal-session-id")
+        if (!sessionId) {
+          sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          sessionStorage.setItem("vibeportal-session-id", sessionId)
+        }
+        userId = sessionId
+      }
       
       setUserIdentifier(userId)
       
