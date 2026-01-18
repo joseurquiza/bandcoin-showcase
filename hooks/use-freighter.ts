@@ -13,17 +13,16 @@ export function useFreighter() {
     setError(null)
 
     try {
-      const connectionResult = await freighterApi.isConnected()
-
-      if (!connectionResult.isConnected) {
-        throw new Error("Freighter wallet is not installed. Please install Freighter extension.")
-      }
-
       // Use requestAccess to prompt user and get public key in one step
+      // This will also handle extension not installed errors from Freighter
       const accessResult = await freighterApi.requestAccess()
 
       if (accessResult.error) {
         throw new Error(accessResult.error)
+      }
+
+      if (!accessResult.address) {
+        throw new Error("No address returned from Freighter. Please unlock your wallet and try again.")
       }
 
       setPublicKey(accessResult.address)
