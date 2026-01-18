@@ -13,16 +13,13 @@ export function useFreighter() {
     setError(null)
 
     try {
-      // First check if Freighter is installed
-      if (typeof window === "undefined" || !window.freighterApi) {
-        throw new Error("Freighter wallet is not installed. Please install Freighter extension.")
-      }
-
-      // Then check if it's connected
+      // Check if Freighter is installed by calling isConnected
+      // The freighter-api package handles the extension detection
       const connectionResult = await freighterApi.isConnected()
 
       if (!connectionResult.isConnected) {
-        throw new Error("Freighter wallet is not connected. Please unlock Freighter.")
+        // Could mean not installed or not unlocked - try requestAccess anyway
+        // as it will prompt the user to install/unlock
       }
 
       // Use requestAccess to prompt user and get public key in one step
@@ -36,7 +33,12 @@ export function useFreighter() {
       return accessResult.address
     } catch (err: any) {
       const errorMessage = err?.message || "Failed to connect to Freighter"
-      setError(errorMessage)
+      // Provide a more helpful error message
+      if (errorMessage.includes("extension") || errorMessage.includes("install")) {
+        setError("Freighter wallet extension not found. Please install it from freighter.app")
+      } else {
+        setError(errorMessage)
+      }
       throw new Error(errorMessage)
     } finally {
       setIsLoading(false)
