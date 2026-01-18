@@ -13,7 +13,6 @@ export interface SavedAsset {
   vibe: string | null
   camera: string | null
   timestamp: string
-  user_identifier: string
   created_at: string
 }
 
@@ -25,19 +24,17 @@ export async function saveAssetToDatabase(asset: {
   vibe?: string
   camera?: string
   timestamp: string
-  user_identifier: string
 }) {
   try {
     const result = await sql`
-      INSERT INTO vibeportal_assets (asset_id, type, url, prompt, vibe, camera, timestamp, user_identifier)
-      VALUES (${asset.asset_id}, ${asset.type}, ${asset.url}, ${asset.prompt}, ${asset.vibe || null}, ${asset.camera || null}, ${asset.timestamp}, ${asset.user_identifier})
+      INSERT INTO vibeportal_assets (asset_id, type, url, prompt, vibe, camera, timestamp)
+      VALUES (${asset.asset_id}, ${asset.type}, ${asset.url}, ${asset.prompt}, ${asset.vibe || null}, ${asset.camera || null}, ${asset.timestamp})
       ON CONFLICT (asset_id) DO UPDATE
       SET url = EXCLUDED.url,
           prompt = EXCLUDED.prompt,
           vibe = EXCLUDED.vibe,
           camera = EXCLUDED.camera,
-          timestamp = EXCLUDED.timestamp,
-          user_identifier = EXCLUDED.user_identifier
+          timestamp = EXCLUDED.timestamp
       RETURNING *
     `
     return { success: true, data: result[0] }
@@ -47,11 +44,10 @@ export async function saveAssetToDatabase(asset: {
   }
 }
 
-export async function loadAssetsFromDatabase(userIdentifier: string): Promise<SavedAsset[]> {
+export async function loadAssetsFromDatabase(): Promise<SavedAsset[]> {
   try {
     const results = await sql`
       SELECT * FROM vibeportal_assets
-      WHERE user_identifier = ${userIdentifier}
       ORDER BY created_at DESC
       LIMIT 100
     `
@@ -62,11 +58,11 @@ export async function loadAssetsFromDatabase(userIdentifier: string): Promise<Sa
   }
 }
 
-export async function deleteAssetFromDatabase(assetId: string, userIdentifier: string) {
+export async function deleteAssetFromDatabase(assetId: string) {
   try {
     await sql`
       DELETE FROM vibeportal_assets
-      WHERE asset_id = ${assetId} AND user_identifier = ${userIdentifier}
+      WHERE asset_id = ${assetId}
     `
     return { success: true }
   } catch (error: any) {

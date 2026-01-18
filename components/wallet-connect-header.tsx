@@ -44,7 +44,7 @@ const WALLET_OPTIONS = [
   },
   {
     id: "bandcoin" as WalletType,
-    name: "Freighter Wallet",
+    name: "BandCoin Wallet",
     description: "Connect with Stellar (Freighter)",
     icon: "🎸",
     chain: "stellar" as ChainType,

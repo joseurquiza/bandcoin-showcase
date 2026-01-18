@@ -3,19 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import {
-  Sparkles,
-  Home,
-  Menu,
-  X,
-  FileText,
-  MapPin,
-  Users,
-  Coins,
-  Gem,
-  MessageCircle,
-  GraduationCap,
-} from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -78,15 +66,30 @@ export default function StudioSidebar() {
     gradient: "from-white to-gray-300",
   }
 
+  // const exploreApp = {
+  //   id: "explore",
+  //   name: "Explore",
+  //   icon: Globe,
+  //   href: "/explore",
+  //   gradient: "from-green-500 to-teal-600",
+  // }
+
   const apps = [
     // Music Platform
     {
       id: "bt",
       name: "Band Together",
       icon: Users,
-      href: "https://bandtogether.io",
-      external: true,
+      href: "/bt",
       gradient: "from-amber-500 to-orange-600",
+    },
+    {
+      id: "stemplayer",
+      name: "BandCoin Studio",
+      icon: Radio,
+      href: "https://www.bandcoin.io/artist/studio",
+      gradient: "from-violet-500 to-pink-600",
+      external: true,
     },
     {
       id: "gigfinder",
@@ -117,12 +120,33 @@ export default function StudioSidebar() {
       href: "/my-collection",
       gradient: "from-purple-400 to-pink-500",
     },
+    // {
+    //   id: "merch",
+    //   name: "Merch Store",
+    //   icon: Shirt,
+    //   href: "/merch",
+    //   gradient: "from-orange-500 to-red-500",
+    // },
+    // {
+    //   id: "portfolio",
+    //   name: "Portfolio",
+    //   icon: Briefcase,
+    //   href: "/examples",
+    //   gradient: "from-amber-500 to-orange-600",
+    // },
     {
       id: "pubassist",
       name: "PubAssist",
       icon: FileText,
       href: "/pubassist",
       gradient: "from-emerald-500 to-green-600",
+    },
+    {
+      id: "chat",
+      name: "Chat",
+      icon: MessageCircle,
+      href: "/chat",
+      gradient: "from-blue-400 to-indigo-500",
     },
     // Platform/System
     {
@@ -139,13 +163,13 @@ export default function StudioSidebar() {
       href: "/rewards",
       gradient: "from-amber-400 to-orange-500",
     },
-    {
-      id: "learn",
-      name: "Learn",
-      icon: GraduationCap,
-      href: "/learn",
-      gradient: "from-amber-400 to-orange-500",
-    },
+    // {
+    //   id: "vault",
+    //   name: "Vault",
+    //   icon: Vault,
+    //   href: "/vault",
+    //   gradient: "from-amber-500 to-orange-600",
+    // },
   ]
 
   const renderNavItem = (app: typeof homeApp, isActive: boolean) => {
@@ -164,6 +188,7 @@ export default function StudioSidebar() {
         className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
           isActive ? "bg-white/10 text-white" : "text-white/60 hover:text-white hover:bg-white/5"
         }`}
+        title={isCollapsed ? app.name : undefined}
       >
         {isActive && (
           <div
@@ -178,9 +203,9 @@ export default function StudioSidebar() {
           />
         </div>
 
-        <span className={`font-medium whitespace-nowrap ${isCollapsed ? "text-xs" : "overflow-hidden text-ellipsis"}`}>
-          {app.name}
-        </span>
+        {!isCollapsed && (
+          <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis">{app.name}</span>
+        )}
 
         {!isCollapsed && "external" in app && app.external && (
           <svg
@@ -220,7 +245,7 @@ export default function StudioSidebar() {
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
-        style={{ width: isCollapsed ? "160px" : `${sidebarWidth}px` }}
+        style={{ width: isCollapsed ? "80px" : `${sidebarWidth}px` }}
         className={`fixed top-0 left-0 h-full bg-zinc-950 border-r border-white/10 backdrop-blur-xl z-40 transition-all duration-300 ${
           isCollapsed ? "-translate-x-full lg:translate-x-0" : "translate-x-0"
         }`}
@@ -240,10 +265,12 @@ export default function StudioSidebar() {
                 />
                 <div className="absolute inset-0 bg-white/10 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className={`overflow-hidden ${isCollapsed ? "hidden" : ""}`}>
-                <h2 className="text-white font-bold text-lg whitespace-nowrap">BandCoin ShowCase</h2>
-                <p className="text-white/40 text-xs whitespace-nowrap">Creative Platform</p>
-              </div>
+              {!isCollapsed && (
+                <div className="overflow-hidden">
+                  <h2 className="text-white font-bold text-lg whitespace-nowrap">BandCoin ShowCase</h2>
+                  <p className="text-white/40 text-xs whitespace-nowrap">Creative Platform</p>
+                </div>
+              )}
             </Link>
           </div>
 
@@ -252,6 +279,12 @@ export default function StudioSidebar() {
             {/* Home */}
             {renderNavItem(homeApp, pathname === homeApp.href)}
 
+            {/* Explore */}
+            {/* {renderNavItem(
+              exploreApp,
+              pathname === exploreApp.href || (exploreApp.href !== "/" && pathname.startsWith(exploreApp.href)),
+            )} */}
+
             {/* Apps Section */}
             {!isCollapsed && (
               <div className="pt-4 pb-2">
@@ -259,7 +292,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(0, 3).map((app) => {
+            {apps.slice(0, 4).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -270,7 +303,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(3, 7).map((app) => {
+            {apps.slice(4, 9).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -281,7 +314,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(7).map((app) => {
+            {apps.slice(9).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}

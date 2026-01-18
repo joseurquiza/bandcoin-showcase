@@ -133,33 +133,10 @@ const VibePortal = () => {
   const [isSyncing, setIsSyncing] = useState(false)
   const [dbSyncEnabled, setDbSyncEnabled] = useState(true)
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null)
-  const [userIdentifier, setUserIdentifier] = useState<string>("")
 
   // --- Load from localStorage AND database on mount ---
   useEffect(() => {
     const loadAssets = async () => {
-      // Get user identifier from cookies or generate unique session
-      const cookieStr = document.cookie
-      let userId = ""
-      
-      // Try to get session_id or vault_session cookie
-      const sessionMatch = cookieStr.match(/session_id=([^;]+)/)
-      const vaultMatch = cookieStr.match(/vault_session=([^;]+)/)
-      
-      if (sessionMatch?.[1] || vaultMatch?.[1]) {
-        userId = sessionMatch?.[1] || vaultMatch?.[1]
-      } else {
-        // No cookies found - generate unique session ID for this browser session
-        let sessionId = sessionStorage.getItem("vibeportal-session-id")
-        if (!sessionId) {
-          sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-          sessionStorage.setItem("vibeportal-session-id", sessionId)
-        }
-        userId = sessionId
-      }
-      
-      setUserIdentifier(userId)
-      
       // Try to load lightweight cache from localStorage first (just IDs and URLs)
       const saved = localStorage.getItem("vibeportal-assets-cache")
       if (saved) {
@@ -180,7 +157,7 @@ const VibePortal = () => {
       if (dbSyncEnabled) {
         setIsSyncing(true)
         try {
-          const dbAssets = await loadAssetsFromDatabase(userId)
+          const dbAssets = await loadAssetsFromDatabase()
           if (dbAssets.length > 0) {
             const convertedAssets = dbAssets.map((dbAsset) => ({
               id: dbAsset.asset_id,
@@ -208,7 +185,7 @@ const VibePortal = () => {
     }
 
     loadAssets()
-  }, [dbSyncEnabled])
+  }, [])
 
   // --- Save to localStorage AND database when assets change ---
   useEffect(() => {
@@ -319,29 +296,23 @@ const VibePortal = () => {
         return
       }
 
-      setReferenceImage(file)
+      const processedFile = file
 
-      // Create initial preview
+      // Check if file is HEIC and convert to JPEG
+      // Removed HEIC conversion logic to fix SSR build error
+
+      setReferenceImage(processedFile)
       const reader = new FileReader()
-      reader.onloadend = async () => {
+      reader.onloadend = () => {
         const result = reader.result as string
         console.log("[v0] Data URL created, length:", result.length)
-
-        // Compress if larger than 2MB to prevent 413 errors
-        if (result.length > 2 * 1024 * 1024) {
-          console.log("[v0] Compressing large image...")
-          const compressed = await compressImage(result, 1024, 0.8)
-          console.log("[v0] Compressed size:", compressed.length)
-          setReferencePreview(compressed)
-        } else {
-          setReferencePreview(result)
-        }
+        setReferencePreview(result)
       }
       reader.onerror = () => {
         console.error("[v0] Error reading file")
         alert("Error reading file. Please try again.")
       }
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(processedFile)
     }
   }
 
@@ -507,10 +478,6 @@ const VibePortal = () => {
 
   // --- Manual Sync Function ---
   const handleManualSync = async () => {
-    if (!userIdentifier) {
-      setStatusMessage("Please connect your wallet first")
-      return
-    }
     setIsSyncing(true)
     try {
       // Save all assets to database
@@ -523,7 +490,6 @@ const VibePortal = () => {
           vibe: asset.vibe,
           camera: asset.camera,
           timestamp: asset.timestamp,
-          user_identifier: userIdentifier,
         })
       }
       setLastSyncTime(new Date().toLocaleTimeString())
@@ -537,8 +503,8 @@ const VibePortal = () => {
 
   // --- Delete Function with Database Sync ---
   const handleDelete = async (assetId: string) => {
-    if (dbSyncEnabled && userIdentifier) {
-      await deleteAssetFromDatabase(assetId, userIdentifier)
+    if (dbSyncEnabled) {
+      await deleteAssetFromDatabase(assetId)
     }
     setGeneratedAssets((prev) => prev.filter((a) => a.id !== assetId))
     if (selectedAsset?.id === assetId) {
