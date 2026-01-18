@@ -80,8 +80,9 @@ export default function StudioSidebar() {
       id: "bt",
       name: "Band Together",
       icon: Users,
-      href: "/bt",
+      href: "https://bandtogether.io",
       gradient: "from-amber-500 to-orange-600",
+      external: true,
     },
     {
       id: "stemplayer",
@@ -140,13 +141,6 @@ export default function StudioSidebar() {
       icon: FileText,
       href: "/pubassist",
       gradient: "from-emerald-500 to-green-600",
-    },
-    {
-      id: "chat",
-      name: "Chat",
-      icon: MessageCircle,
-      href: "/chat",
-      gradient: "from-blue-400 to-indigo-500",
     },
     // Platform/System
     {
