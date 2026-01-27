@@ -3,8 +3,20 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle } from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle, HelpCircle } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { createSupportSession, sendSupportMessage, getChatHistory } from "@/app/support/actions"
+
+interface Message {
+  sender_type: string
+  sender_name: string | null
+  message: string
+  created_at: string
+}
 
 export default function StudioSidebar() {
   const pathname = usePathname()
@@ -12,6 +24,12 @@ export default function StudioSidebar() {
   const [sidebarWidth, setSidebarWidth] = useState(280) // Default 280px for full text display
   const [isResizing, setIsResizing] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
+  const [isSupportOpen, setIsSupportOpen] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputMessage, setInputMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const isMobile = window.innerWidth < 1024 // lg breakpoint
@@ -57,6 +75,57 @@ export default function StudioSidebar() {
   useEffect(() => {
     document.documentElement.style.setProperty("--sidebar-width", `${sidebarWidth}px`)
   }, [sidebarWidth])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [messages])
+
+  const handleOpenSupport = async () => {
+    setIsSupportOpen(true)
+    if (!sessionId) {
+      const result = await createSupportSession()
+      if (result.success && result.sessionId) {
+        setSessionId(result.sessionId)
+        const history = await getChatHistory(result.sessionId)
+        if (history.success && history.messages) {
+          setMessages(history.messages as Message[])
+        }
+      }
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || !sessionId || isLoading) return
+
+    const userMsg = inputMessage
+    setInputMessage("")
+    setIsLoading(true)
+
+    const optimisticMsg: Message = {
+      sender_type: "user",
+      sender_name: "Guest",
+      message: userMsg,
+      created_at: new Date().toISOString(),
+    }
+    setMessages((prev) => [...prev, optimisticMsg])
+
+    try {
+      const result = await sendSupportMessage(sessionId, userMsg)
+
+      if (result.success) {
+        const history = await getChatHistory(sessionId)
+        if (history.success && history.messages) {
+          setMessages(history.messages as Message[])
+        }
+      }
+    } catch (error) {
+      console.error("[v0] Error sending message:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const homeApp = {
     id: "home",
@@ -318,6 +387,22 @@ export default function StudioSidebar() {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
+
+            {/* Support Button */}
+            <button
+              onClick={handleOpenSupport}
+              className="group relative flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5 w-full"
+              title={isCollapsed ? "Support" : undefined}
+            >
+              <div className="relative flex-shrink-0">
+                <HelpCircle className="w-5 h-5 relative z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg blur-lg opacity-0 group-hover:opacity-50 transition-opacity" />
+              </div>
+
+              {!isCollapsed && <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis">Support</span>}
+
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg opacity-0 group-hover:opacity-5 transition-opacity" />
+            </button>
           </nav>
 
           {/* Collapse button (desktop only) */}
@@ -361,6 +446,90 @@ export default function StudioSidebar() {
           </div>
         )}
       </aside>
+
+      {/* Support Dialog */}
+      <Dialog open={isSupportOpen} onOpenChange={setIsSupportOpen}>
+        <DialogContent className="max-w-2xl h-[600px] flex flex-col bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <HelpCircle className="h-5 w-5 text-blue-500" />
+              BandCoin Support
+            </DialogTitle>
+            <DialogDescription>
+              Chat with our support team. We're here to help!
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto space-y-4 py-4">
+            {messages.map((msg, index) => (
+              <div key={index} className={`flex gap-2 ${msg.sender_type === "user" ? "justify-end" : "justify-start"}`}>
+                {msg.sender_type !== "user" && (
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="h-4 w-4 text-white" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[75%] rounded-lg p-3 ${
+                    msg.sender_type === "user"
+                      ? "bg-blue-600 text-white"
+                      : msg.sender_type === "admin"
+                        ? "bg-green-600 text-white"
+                        : "bg-zinc-800 text-zinc-100"
+                  }`}
+                >
+                  {msg.sender_type !== "user" && <p className="text-xs opacity-70 mb-1">{msg.sender_name}</p>}
+                  <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                </div>
+                {msg.sender_type === "user" && (
+                  <div className="h-8 w-8 rounded-full bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="h-4 w-4 text-zinc-300" />
+                  </div>
+                )}
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex gap-2 justify-start">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                  <MessageCircle className="h-4 w-4 text-white" />
+                </div>
+                <div className="bg-zinc-800 rounded-lg p-3">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="border-t border-zinc-800 pt-4">
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSendMessage()
+              }}
+            >
+              <Input
+                placeholder="Type your message..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                disabled={isLoading}
+                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || !inputMessage.trim()}
+                className="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+              >
+                Send
+              </Button>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
