@@ -1,11 +1,23 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, createContext, useContext } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MessageCircle, X, Send, User, RotateCcw } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { createSupportSession, sendSupportMessage, escalateToHuman, getChatHistory } from "@/app/support/actions"
+
+const SupportChatContext = createContext<{
+  openSupport: () => void
+} | null>(null)
+
+export const useSupportChat = () => {
+  const context = useContext(SupportChatContext)
+  if (!context) {
+    throw new Error("useSupportChat must be used within SupportChatProvider")
+  }
+  return context
+}
 
 interface Message {
   sender_type: string
@@ -14,7 +26,7 @@ interface Message {
   created_at: string
 }
 
-export default function SupportChatWidget() {
+function SupportChatWidgetContent() {
   const [isOpen, setIsOpen] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -66,6 +78,17 @@ export default function SupportChatWidget() {
       }
     }
   }
+
+  // Listen for custom events to open chat
+  useEffect(() => {
+    const handleOpenEvent = () => {
+      handleOpen()
+    }
+    window.addEventListener("openSupportChat", handleOpenEvent)
+    return () => {
+      window.removeEventListener("openSupportChat", handleOpenEvent)
+    }
+  }, [sessionId])
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || !sessionId || isLoading) return
@@ -296,5 +319,17 @@ export default function SupportChatWidget() {
         </form>
       </footer>
     </Card>
+  )
+}
+
+export default function SupportChatWidget() {
+  const openSupport = () => {
+    window.dispatchEvent(new Event("openSupportChat"))
+  }
+
+  return (
+    <SupportChatContext.Provider value={{ openSupport }}>
+      <SupportChatWidgetContent />
+    </SupportChatContext.Provider>
   )
 }
