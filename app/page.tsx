@@ -24,16 +24,6 @@ export default function HomePage() {
 
   const apps = [
     {
-      id: "beatbuilder",
-      name: "Beat Builder",
-      description: "Drum Pattern Creator (AI)",
-      icon: Music,
-      image: "/images/beatbuilder-icon.jpg",
-      href: "/beatbuilder",
-      gradient: "from-cyan-500 via-blue-500 to-purple-600",
-      glowColor: "rgba(59, 130, 246, 0.5)",
-    },
-    {
       id: "vibeportal",
       name: "VibePortal",
       description: "Image Generation Suite (AI)",
@@ -42,16 +32,6 @@ export default function HomePage() {
       href: "/vibeportal",
       gradient: "from-pink-500 via-purple-500 to-indigo-600",
       glowColor: "rgba(168, 85, 247, 0.5)",
-    },
-    {
-      id: "sitebuilder",
-      name: "Site Builder",
-      description: "Custom Website Design & Hosting",
-      icon: Wand2,
-      image: "/images/sitebuilder-icon.jpg",
-      href: "/site-builder",
-      gradient: "from-blue-500 via-cyan-500 to-teal-600",
-      glowColor: "rgba(6, 182, 212, 0.5)",
     },
     {
       id: "pubassist",
