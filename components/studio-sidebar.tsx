@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle } from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle, HelpCircle } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -57,6 +57,10 @@ export default function StudioSidebar() {
   useEffect(() => {
     document.documentElement.style.setProperty("--sidebar-width", `${sidebarWidth}px`)
   }, [sidebarWidth])
+
+  const handleOpenSupport = () => {
+    window.dispatchEvent(new Event("openSupportChat"))
+  }
 
   const homeApp = {
     id: "home",
@@ -318,6 +322,22 @@ export default function StudioSidebar() {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
+
+            {/* Support Button */}
+            <button
+              onClick={handleOpenSupport}
+              className="group relative flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5 w-full"
+              title={isCollapsed ? "Support" : undefined}
+            >
+              <div className="relative flex-shrink-0">
+                <HelpCircle className="w-5 h-5 relative z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg blur-lg opacity-0 group-hover:opacity-50 transition-opacity" />
+              </div>
+
+              {!isCollapsed && <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis">Support</span>}
+
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg opacity-0 group-hover:opacity-5 transition-opacity" />
+            </button>
           </nav>
 
           {/* Collapse button (desktop only) */}
