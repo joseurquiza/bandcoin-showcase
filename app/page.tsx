@@ -24,16 +24,6 @@ export default function HomePage() {
 
   const apps = [
     {
-      id: "beatbuilder",
-      name: "Beat Builder",
-      description: "Drum Pattern Creator (AI)",
-      icon: Music,
-      image: "/images/beatbuilder-icon.jpg",
-      href: "/beatbuilder",
-      gradient: "from-cyan-500 via-blue-500 to-purple-600",
-      glowColor: "rgba(59, 130, 246, 0.5)",
-    },
-    {
       id: "vibeportal",
       name: "VibePortal",
       description: "Image Generation Suite (AI)",
