@@ -120,8 +120,8 @@ export default function StarWarsOnboarding({ onComplete }: StarWarsOnboardingPro
       <div
         className="perspective-container"
         style={{
-          perspective: "400px",
-          perspectiveOrigin: "50% 100%",
+          perspective: "600px",
+          perspectiveOrigin: "50% 50%",
         }}
       >
         <div className="crawl-container">
@@ -229,7 +229,7 @@ export default function StarWarsOnboarding({ onComplete }: StarWarsOnboardingPro
           width: 100%;
           height: 100%;
           transform-origin: 50% 100%;
-          transform: rotateX(25deg);
+          transform: rotateX(20deg);
           transform-style: preserve-3d;
         }
 
@@ -245,10 +245,12 @@ export default function StarWarsOnboarding({ onComplete }: StarWarsOnboardingPro
 
         @keyframes crawl {
           0% {
-            transform: translateY(0) translateZ(0);
+            transform: translateY(0) translateZ(0) scale(1);
+            opacity: 1;
           }
           100% {
-            transform: translateY(-250%) translateZ(2000px);
+            transform: translateY(-250%) translateZ(200px) scale(0.8);
+            opacity: 0;
           }
         }
 
