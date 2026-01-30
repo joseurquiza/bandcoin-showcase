@@ -81,13 +81,6 @@ export default function StudioSidebar() {
   const apps = [
     // Music Platform
     {
-      id: "bt",
-      name: "Band Together",
-      icon: Users,
-      href: "/bt",
-      gradient: "from-amber-500 to-orange-600",
-    },
-    {
       id: "stemplayer",
       name: "BandCoin Studio",
       icon: Radio,
@@ -154,6 +147,13 @@ export default function StudioSidebar() {
       gradient: "from-cyan-400 to-blue-500",
     },
     // Community
+    {
+      id: "bt",
+      name: "Band Together",
+      icon: Users,
+      href: "/bt",
+      gradient: "from-amber-500 to-orange-600",
+    },
     {
       id: "bandcoin-site",
       name: "BandCoin",
@@ -313,7 +313,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(0, 4).map((app) => {
+            {apps.slice(0, 3).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -324,7 +324,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(4, 7).map((app) => {
+            {apps.slice(3, 6).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -335,7 +335,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(7, 8).map((app) => {
+            {apps.slice(6, 7).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -346,7 +346,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(8, 10).map((app) => {
+            {apps.slice(7, 10).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
