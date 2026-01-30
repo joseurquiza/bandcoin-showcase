@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle, HelpCircle } from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle, HelpCircle, Globe } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -151,6 +151,14 @@ export default function StudioSidebar() {
       icon: MessageCircle,
       href: "/chat",
       gradient: "from-blue-400 to-indigo-500",
+    },
+    // Services
+    {
+      id: "websites-epks",
+      name: "Websites & EPKs",
+      icon: Globe,
+      href: "/examples",
+      gradient: "from-cyan-400 to-blue-500",
     },
     // Platform/System
     {
@@ -314,11 +322,22 @@ export default function StudioSidebar() {
 
             {!isCollapsed && (
               <div className="pt-4 pb-2">
+                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Services</h2>
+              </div>
+            )}
+
+            {apps.slice(9, 10).map((app) => {
+              const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
+              return renderNavItem(app as typeof homeApp, isActive)
+            })}
+
+            {!isCollapsed && (
+              <div className="pt-4 pb-2">
                 <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Platform/System</h2>
               </div>
             )}
 
-            {apps.slice(9).map((app) => {
+            {apps.slice(10).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
