@@ -79,7 +79,7 @@ export default function StudioSidebar() {
   // }
 
   const apps = [
-    // Music Platform
+    // Community
     {
       id: "bt",
       name: "Band Together",
@@ -88,26 +88,19 @@ export default function StudioSidebar() {
       gradient: "from-amber-500 to-orange-600",
     },
     {
-      id: "stemplayer",
-      name: "BandCoin Studio",
-      icon: Radio,
-      href: "https://www.bandcoin.io/artist/studio",
-      gradient: "from-violet-500 to-pink-600",
+      id: "bandcoin-site",
+      name: "BandCoin",
+      icon: ExternalLink,
+      href: "https://bandcoin.io",
+      gradient: "from-yellow-400 to-amber-500",
       external: true,
     },
     {
-      id: "gigfinder",
-      name: "Gig Finder",
-      icon: MapPin,
-      href: "/gig-finder",
-      gradient: "from-orange-500 to-red-600",
-    },
-    {
-      id: "vibeportal",
-      name: "VibePortal",
-      icon: Sparkles,
-      href: "/vibeportal",
-      gradient: "from-pink-500 to-purple-600",
+      id: "chat",
+      name: "Chat",
+      icon: MessageCircle,
+      href: "/chat",
+      gradient: "from-blue-400 to-indigo-500",
     },
     // Content/Creation
     {
@@ -145,30 +138,6 @@ export default function StudioSidebar() {
       href: "/pubassist",
       gradient: "from-emerald-500 to-green-600",
     },
-    // Services
-    {
-      id: "websites-epks",
-      name: "Websites & EPKs",
-      icon: Globe,
-      href: "/examples",
-      gradient: "from-cyan-400 to-blue-500",
-    },
-    // Community
-    {
-      id: "bandcoin-site",
-      name: "BandCoin",
-      icon: ExternalLink,
-      href: "https://bandcoin.io",
-      gradient: "from-yellow-400 to-amber-500",
-      external: true,
-    },
-    {
-      id: "chat",
-      name: "Chat",
-      icon: MessageCircle,
-      href: "/chat",
-      gradient: "from-blue-400 to-indigo-500",
-    },
     // Platform/System
     {
       id: "buy-bandcoin",
@@ -191,6 +160,37 @@ export default function StudioSidebar() {
     //   href: "/vault",
     //   gradient: "from-amber-500 to-orange-600",
     // },
+    // Services
+    {
+      id: "websites-epks",
+      name: "Websites & EPKs",
+      icon: Globe,
+      href: "/examples",
+      gradient: "from-cyan-400 to-blue-500",
+    },
+    // Tools
+    {
+      id: "stemplayer",
+      name: "BandCoin Studio",
+      icon: Radio,
+      href: "https://www.bandcoin.io/artist/studio",
+      gradient: "from-violet-500 to-pink-600",
+      external: true,
+    },
+    {
+      id: "gigfinder",
+      name: "Gig Finder",
+      icon: MapPin,
+      href: "/gig-finder",
+      gradient: "from-orange-500 to-red-600",
+    },
+    {
+      id: "vibeportal",
+      name: "VibePortal",
+      icon: Sparkles,
+      href: "/vibeportal",
+      gradient: "from-pink-500 to-purple-600",
+    },
   ]
 
   const renderNavItem = (app: typeof homeApp, isActive: boolean) => {
@@ -309,11 +309,11 @@ export default function StudioSidebar() {
             {/* Apps Section */}
             {!isCollapsed && (
               <div className="pt-4 pb-2">
-                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Music Platform</h2>
+                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Community</h2>
               </div>
             )}
 
-            {apps.slice(0, 4).map((app) => {
+            {apps.slice(0, 3).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -324,29 +324,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(4, 7).map((app) => {
-              const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
-              return renderNavItem(app as typeof homeApp, isActive)
-            })}
-
-            {!isCollapsed && (
-              <div className="pt-4 pb-2">
-                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Services</h2>
-              </div>
-            )}
-
-            {apps.slice(7, 8).map((app) => {
-              const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
-              return renderNavItem(app as typeof homeApp, isActive)
-            })}
-
-            {!isCollapsed && (
-              <div className="pt-4 pb-2">
-                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Community</h2>
-              </div>
-            )}
-
-            {apps.slice(8, 10).map((app) => {
+            {apps.slice(3, 6).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -357,7 +335,29 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(10).map((app) => {
+            {apps.slice(6, 8).map((app) => {
+              const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
+              return renderNavItem(app as typeof homeApp, isActive)
+            })}
+
+            {!isCollapsed && (
+              <div className="pt-4 pb-2">
+                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Services</h2>
+              </div>
+            )}
+
+            {apps.slice(8, 9).map((app) => {
+              const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
+              return renderNavItem(app as typeof homeApp, isActive)
+            })}
+
+            {!isCollapsed && (
+              <div className="pt-4 pb-2">
+                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Tools</h2>
+              </div>
+            )}
+
+            {apps.slice(9).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
