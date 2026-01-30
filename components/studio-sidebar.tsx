@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle, HelpCircle } from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle, HelpCircle, Globe, ExternalLink } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -144,6 +144,23 @@ export default function StudioSidebar() {
       icon: FileText,
       href: "/pubassist",
       gradient: "from-emerald-500 to-green-600",
+    },
+    // Services
+    {
+      id: "websites-epks",
+      name: "Websites & EPKs",
+      icon: Globe,
+      href: "/examples",
+      gradient: "from-cyan-400 to-blue-500",
+    },
+    // Community
+    {
+      id: "bandcoin-site",
+      name: "BandCoin",
+      icon: ExternalLink,
+      href: "https://bandcoin.io",
+      gradient: "from-yellow-400 to-amber-500",
+      external: true,
     },
     {
       id: "chat",
@@ -307,7 +324,29 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(4, 9).map((app) => {
+            {apps.slice(4, 7).map((app) => {
+              const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
+              return renderNavItem(app as typeof homeApp, isActive)
+            })}
+
+            {!isCollapsed && (
+              <div className="pt-4 pb-2">
+                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Services</h2>
+              </div>
+            )}
+
+            {apps.slice(7, 8).map((app) => {
+              const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
+              return renderNavItem(app as typeof homeApp, isActive)
+            })}
+
+            {!isCollapsed && (
+              <div className="pt-4 pb-2">
+                <h2 className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider">Community</h2>
+              </div>
+            )}
+
+            {apps.slice(8, 10).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -318,7 +357,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(9).map((app) => {
+            {apps.slice(10).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
