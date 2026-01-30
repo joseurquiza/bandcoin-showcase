@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, MessageCircle, HelpCircle, Globe, ExternalLink } from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, HelpCircle, Globe, ExternalLink } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -94,13 +94,6 @@ export default function StudioSidebar() {
       href: "https://bandcoin.io",
       gradient: "from-yellow-400 to-amber-500",
       external: true,
-    },
-    {
-      id: "chat",
-      name: "Chat",
-      icon: MessageCircle,
-      href: "/chat",
-      gradient: "from-blue-400 to-indigo-500",
     },
     // Content/Creation
     {
@@ -313,7 +306,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(0, 3).map((app) => {
+            {apps.slice(0, 2).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -324,7 +317,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(3, 6).map((app) => {
+            {apps.slice(2, 5).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -335,7 +328,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(6, 8).map((app) => {
+            {apps.slice(5, 7).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -346,7 +339,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(8, 9).map((app) => {
+            {apps.slice(7, 8).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -357,7 +350,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(9).map((app) => {
+            {apps.slice(8).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
