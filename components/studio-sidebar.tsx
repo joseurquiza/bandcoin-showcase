@@ -315,7 +315,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(4, 9).map((app) => {
+            {apps.slice(4, 8).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -326,7 +326,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(9, 10).map((app) => {
+            {apps.slice(8, 9).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
@@ -337,7 +337,7 @@ export default function StudioSidebar() {
               </div>
             )}
 
-            {apps.slice(10).map((app) => {
+            {apps.slice(9).map((app) => {
               const isActive = pathname === app.href || (app.href !== "/" && pathname.startsWith(app.href))
               return renderNavItem(app as typeof homeApp, isActive)
             })}
