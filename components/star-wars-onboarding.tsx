@@ -151,59 +151,58 @@ export default function StarWarsOnboarding({ onComplete }: StarWarsOnboardingPro
                 creation, visual design, and professional web experiences.
               </p>
 
-              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">CREATE MUSIC</h2>
+              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">COMMUNITY</h2>
               <p>
-                <span className="font-bold">Beat Builder:</span> Craft custom drum patterns and rhythms with an
-                intuitive interface and AI-powered suggestions.
+                <span className="font-bold">Band Together:</span> Connect with other musicians, collaborate on projects,
+                and build your network in the music industry.
               </p>
               <p>
-                <span className="font-bold">BandCoin Studio:</span> Access a full digital audio workstation with AI
-                music creation tools, stem players, and professional mixing capabilities.
+                <span className="font-bold">BandCoin:</span> Explore the official BandCoin ecosystem and learn about the
+                platform powering your creative journey.
               </p>
 
-              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">DESIGN VISUALS</h2>
-              <p>
-                <span className="font-bold">VibePortal:</span> Generate stunning album art, promotional materials, and
-                social media graphics using image generation technology.
-              </p>
+              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">CONTENT & CREATION</h2>
               <p>
                 <span className="font-bold">Collectibles:</span> Create unique digital tokens and merchandise designs to
-                engage your fanbase.
-              </p>
-
-              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">BUILD YOUR PRESENCE</h2>
-              <p>
-                <span className="font-bold">Site Builder:</span> Design and host professional websites and EPKs without
-                writing a single line of code.
+                engage your fanbase and monetize your art.
               </p>
               <p>
-                <span className="font-bold">Portfolio Showcase:</span> Explore examples of stunning websites and EPKs
-                we've created for other artists.
-              </p>
-
-              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">GROW YOUR CAREER</h2>
-              <p>
-                <span className="font-bold">Gig Finder:</span> Discover venues, connect with bookers, and find
-                performance opportunities using venue discovery tools.
+                <span className="font-bold">My Collection:</span> Manage and showcase your digital collectibles,
+                track ownership, and curate your portfolio.
               </p>
               <p>
                 <span className="font-bold">PubAssist:</span> Navigate music publishing registration with ASCAP, BMI,
                 and other PROs with guided assistance.
               </p>
 
-              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">MANAGE YOUR ASSETS</h2>
+              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">PLATFORM & SYSTEM</h2>
               <p>
-                <span className="font-bold">Vault:</span> Securely manage your digital wallet, BandCoin tokens, and
-                blockchain assets.
+                <span className="font-bold">Buy BandCoin:</span> Purchase BandCoin tokens to unlock premium features,
+                trade collectibles, and participate in the ecosystem.
               </p>
               <p>
                 <span className="font-bold">Rewards:</span> Earn BandCoin tokens by using the platform and engaging with
                 the community.
               </p>
 
-              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">EXPLORE THE ECOSYSTEM</h2>
+              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">SERVICES</h2>
               <p>
-                Discover integrations, partnerships, and the full suite of tools available in the BandCoin ecosystem.
+                <span className="font-bold">Websites & EPKs:</span> Explore examples of stunning websites and Electronic
+                Press Kits created for artists like you.
+              </p>
+
+              <h2 className="text-6xl font-bold text-yellow-400 mt-12 mb-6">TOOLS</h2>
+              <p>
+                <span className="font-bold">BandCoin Studio:</span> Access a full digital audio workstation with AI
+                music creation tools, stem players, and professional mixing capabilities.
+              </p>
+              <p>
+                <span className="font-bold">Gig Finder:</span> Discover venues, connect with bookers, and find
+                performance opportunities using venue discovery tools.
+              </p>
+              <p>
+                <span className="font-bold">VibePortal:</span> Generate stunning album art, promotional materials, and
+                social media graphics using AI-powered image generation technology.
               </p>
 
               <p className="text-4xl font-bold text-center mt-20 mb-32">LET'S BEGIN YOUR JOURNEY.</p>
