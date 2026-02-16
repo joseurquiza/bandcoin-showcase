@@ -41,12 +41,19 @@ export function validateEnv(config: EnvConfig): void {
 /**
  * Gets an environment variable with validation
  * Throws an error if the variable is not set
+ * Only validates at runtime (not during build)
  */
 export function getRequiredEnv(key: string): string {
+  // During build time, return a placeholder to prevent build failures
+  // The actual validation happens at runtime when the code executes
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return `__BUILD_TIME_PLACEHOLDER_${key}__`;
+  }
+  
   const value = process.env[key];
   if (!value || value.trim() === '') {
     throw new EnvValidationError(
-      `Required environment variable ${key} is not set. Please add it to your .env.local file.`
+      `Required environment variable ${key} is not set. Please add it to your .env.local file or Vercel environment variables.`
     );
   }
   return value;
@@ -58,26 +65,4 @@ export function getRequiredEnv(key: string): string {
  */
 export function getOptionalEnv(key: string, defaultValue: string = ''): string {
   return process.env[key] || defaultValue;
-}
-
-// Validate critical environment variables on module load
-if (typeof window === 'undefined') {
-  // Only run on server-side
-  try {
-    validateEnv({
-      required: [
-        'JWT_SECRET',
-        'DATABASE_URL',
-        'NEXT_PUBLIC_STELLAR_NETWORK',
-      ],
-    });
-  } catch (error) {
-    if (error instanceof EnvValidationError) {
-      console.error('\n🚨 SECURITY ERROR:', error.message, '\n');
-      // In production, fail fast
-      if (process.env.NODE_ENV === 'production') {
-        process.exit(1);
-      }
-    }
-  }
 }
