@@ -5,7 +5,12 @@ import { neon } from "@neondatabase/serverless"
 import { getStellarBandCoinBalance } from "./stellar-balance"
 import { getRequiredEnv } from "./env-validator"
 
-const sql = neon(getRequiredEnv('DATABASE_URL'))
+// Lazy-load to avoid build-time errors
+let _sql: ReturnType<typeof neon> | null = null
+function getSql() {
+  if (!_sql) _sql = neon(getRequiredEnv('DATABASE_URL'))
+  return _sql
+}
 
 export async function getSessionId(): Promise<string> {
   const cookieStore = await cookies()
@@ -31,6 +36,7 @@ export async function checkAIUsage(feature: string): Promise<{
   dailyLimit: number
   remaining: number
 }> {
+  const sql = getSql()
   const sessionId = await getSessionId()
   const dailyLimit = AI_DAILY_LIMITS[feature] || 10
 
@@ -54,6 +60,7 @@ export async function checkAIUsage(feature: string): Promise<{
 }
 
 export async function incrementAIUsage(feature: string): Promise<void> {
+  const sql = getSql()
   const sessionId = await getSessionId()
 
   await sql`
@@ -76,6 +83,7 @@ export async function getAIUsageStatus(): Promise<
     }
   >
 > {
+  const sql = getSql()
   const sessionId = await getSessionId()
 
   const result = await sql`
@@ -106,6 +114,7 @@ export async function checkUsage(
   feature: string,
   dailyLimit: number,
 ): Promise<{ allowed: boolean; remaining: number }> {
+  const sql = getSql()
   const result = await sql`
     SELECT usage_count 
     FROM ai_usage 
@@ -124,6 +133,7 @@ export async function checkUsage(
 }
 
 export async function incrementUsage(sessionId: string, feature: string): Promise<void> {
+  const sql = getSql()
   await sql`
     INSERT INTO ai_usage (session_id, feature, usage_date, usage_count)
     VALUES (${sessionId}, ${feature}, CURRENT_DATE, 1)
@@ -146,6 +156,7 @@ export async function checkAIUsageWithBandCoin(feature: string): Promise<{
   canAfford: boolean
   stellarAddress?: string
 }> {
+  const sql = getSql()
   const sessionId = await getSessionId()
   const dailyLimit = AI_DAILY_LIMITS[feature] || 10
   const bandcoinCost = BANDCOIN_COSTS[feature] || 5
@@ -203,6 +214,7 @@ export async function checkAIUsageWithBandCoin(feature: string): Promise<{
 }
 
 export async function spendBandCoin(feature: string): Promise<{ success: boolean; newBalance: number }> {
+  const sql = getSql()
   const sessionId = await getSessionId()
   const bandcoinCost = BANDCOIN_COSTS[feature] || 5
 
@@ -245,6 +257,7 @@ export async function spendBandCoin(feature: string): Promise<{ success: boolean
 
 export async function addBandCoin(sessionId: string, amount: number, source = "purchase"): Promise<boolean> {
   try {
+    const sql = getSql()
     // Get or create user
     const userResult = await sql`
       INSERT INTO reward_users (session_id, total_tokens, level, last_active)

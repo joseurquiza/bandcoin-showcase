@@ -5,8 +5,19 @@ import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
 import { getRequiredEnv } from "@/lib/env-validator"
 
-const sql = neon(getRequiredEnv('DATABASE_URL'))
-const JWT_SECRET = new TextEncoder().encode(getRequiredEnv('JWT_SECRET'))
+// Lazy-load to avoid build-time errors
+let _sql: ReturnType<typeof neon> | null = null
+let _jwtSecret: Uint8Array | null = null
+
+function getSql() {
+  if (!_sql) _sql = neon(getRequiredEnv('DATABASE_URL'))
+  return _sql
+}
+
+function getJwtSecret() {
+  if (!_jwtSecret) _jwtSecret = new TextEncoder().encode(getRequiredEnv('JWT_SECRET'))
+  return _jwtSecret
+}
 
 async function getCurrentProfile() {
   const cookieStore = await cookies()
@@ -17,8 +28,9 @@ async function getCurrentProfile() {
   }
 
   try {
-    const verified = await jwtVerify(token, JWT_SECRET)
+    const verified = await jwtVerify(token, getJwtSecret())
     const { profileId } = verified.payload as { profileId: number }
+    const sql = getSql()
     const profiles = await sql`SELECT * FROM bt_profiles WHERE id = ${profileId}`
     return profiles[0] || null
   } catch {
@@ -47,6 +59,7 @@ export async function sendMessage(toProfileId: number, subject: string, message:
   }
 
   try {
+    const sql = getSql()
     await sql`
       INSERT INTO bt_messages (from_profile_id, to_profile_id, subject, message)
       VALUES (${profile.id}, ${toProfileId}, ${subject.trim()}, ${message.trim()})
@@ -62,6 +75,7 @@ export async function getInbox() {
   const profile = await getCurrentProfile()
   if (!profile) return []
 
+  const sql = getSql()
   const messages = await sql`
     SELECT m.*, p.musician_name as from_name, p.avatar_url as from_avatar
     FROM bt_messages m
@@ -77,6 +91,7 @@ export async function getSentMessages() {
   const profile = await getCurrentProfile()
   if (!profile) return []
 
+  const sql = getSql()
   const messages = await sql`
     SELECT m.*, p.musician_name as to_name
     FROM bt_messages m
@@ -94,6 +109,7 @@ export async function markAsRead(messageId: number) {
     return { success: false, error: "Not authenticated" }
   }
 
+  const sql = getSql()
   await sql`
     UPDATE bt_messages 
     SET is_read = true 

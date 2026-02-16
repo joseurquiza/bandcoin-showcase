@@ -7,8 +7,23 @@ import { SignJWT, jwtVerify } from "jose"
 import { getRequiredEnv } from "@/lib/env-validator"
 import { validatePasswordStrict } from "@/lib/password-validator"
 
-const sql = neon(getRequiredEnv('DATABASE_URL'))
-const JWT_SECRET = new TextEncoder().encode(getRequiredEnv('JWT_SECRET'))
+// Lazy-load environment variables to avoid errors during module initialization
+let _sql: ReturnType<typeof neon> | null = null
+let _jwtSecret: Uint8Array | null = null
+
+function getSql() {
+  if (!_sql) {
+    _sql = neon(getRequiredEnv('DATABASE_URL'))
+  }
+  return _sql
+}
+
+function getJwtSecret() {
+  if (!_jwtSecret) {
+    _jwtSecret = new TextEncoder().encode(getRequiredEnv('JWT_SECRET'))
+  }
+  return _jwtSecret
+}
 
 export type VaultUser = {
   id: number
@@ -40,6 +55,7 @@ export async function signUp(
       return { success: false, error: passwordValidation.errors[0] }
     }
 
+    const sql = getSql()
     const existingUser = await sql`SELECT id FROM vault_users WHERE email = ${email}`
     if (existingUser.length > 0) {
       return { success: false, error: "Email already exists" }
@@ -68,7 +84,7 @@ export async function signUp(
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("7d")
-      .sign(JWT_SECRET)
+      .sign(getJwtSecret())
     ;(await cookies()).set("vault_session", token, {
       httpOnly: true,
       secure: true, // Always use secure cookies
@@ -86,6 +102,7 @@ export async function signUp(
 
 export async function signIn(email: string, password: string) {
   try {
+    const sql = getSql()
     const result = await sql`
       SELECT id, email, password_hash, display_name, role, wallet_address, wallet_type, stellar_public_key, avatar_url
       FROM vault_users
@@ -107,7 +124,7 @@ export async function signIn(email: string, password: string) {
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("7d")
-      .sign(JWT_SECRET)
+      .sign(getJwtSecret())
     ;(await cookies()).set("vault_session", token, {
       httpOnly: true,
       secure: true, // Always use secure cookies
@@ -149,9 +166,10 @@ export async function getCurrentUser(): Promise<VaultUser | null> {
       return null
     }
 
-    const verified = await jwtVerify(token, JWT_SECRET)
+    const verified = await jwtVerify(token, getJwtSecret())
     const { userId } = verified.payload as { userId: number }
 
+    const sql = getSql()
     const result = await sql`
       SELECT id, email, display_name, role, wallet_address, wallet_type, stellar_public_key, avatar_url
       FROM vault_users
@@ -177,6 +195,8 @@ export async function updateWalletAddress(walletAddress: string, walletType: "et
       return { success: false, error: "Not authenticated" }
     }
 
+    const sql = getSql()
+    
     // Validate wallet address format
     if (walletType === "ethereum") {
       if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {

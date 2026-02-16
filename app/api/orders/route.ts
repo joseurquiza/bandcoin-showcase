@@ -3,7 +3,12 @@ import { neon } from "@neondatabase/serverless"
 import { getRequiredEnv } from "@/lib/env-validator"
 import { rateLimiters, getClientIdentifier, createRateLimitResponse } from "@/lib/rate-limiter"
 
-const sql = neon(getRequiredEnv('DATABASE_URL'))
+// Lazy-load to avoid build-time errors
+let _sql: ReturnType<typeof neon> | null = null
+function getSql() {
+  if (!_sql) _sql = neon(getRequiredEnv('DATABASE_URL'))
+  return _sql
+}
 
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -64,6 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert order into database
+    const sql = getSql()
     const result = await sql`
       INSERT INTO orders (
         name, 
@@ -134,6 +140,7 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Math.max(Number.parseInt(searchParams.get("limit") || "10"), 1), 100)
     const offset = Math.max(Number.parseInt(searchParams.get("offset") || "0"), 0)
 
+    const sql = getSql()
     const orders = await sql`
       SELECT 
         id,

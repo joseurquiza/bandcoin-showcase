@@ -3,7 +3,12 @@
 import { neon } from "@neondatabase/serverless"
 import { getRequiredEnv } from "@/lib/env-validator"
 
-const sql = neon(getRequiredEnv('DATABASE_URL'))
+// Lazy-load to avoid build-time errors
+let _sql: ReturnType<typeof neon> | null = null
+function getSql() {
+  if (!_sql) _sql = neon(getRequiredEnv('DATABASE_URL'))
+  return _sql
+}
 
 export interface SavedAsset {
   id: number
@@ -27,6 +32,7 @@ export async function saveAssetToDatabase(asset: {
   timestamp: string
 }) {
   try {
+    const sql = getSql()
     const result = await sql`
       INSERT INTO vibeportal_assets (asset_id, type, url, prompt, vibe, camera, timestamp)
       VALUES (${asset.asset_id}, ${asset.type}, ${asset.url}, ${asset.prompt}, ${asset.vibe || null}, ${asset.camera || null}, ${asset.timestamp})
@@ -47,6 +53,7 @@ export async function saveAssetToDatabase(asset: {
 
 export async function loadAssetsFromDatabase(): Promise<SavedAsset[]> {
   try {
+    const sql = getSql()
     const results = await sql`
       SELECT * FROM vibeportal_assets
       ORDER BY created_at DESC
@@ -61,6 +68,7 @@ export async function loadAssetsFromDatabase(): Promise<SavedAsset[]> {
 
 export async function deleteAssetFromDatabase(assetId: string) {
   try {
+    const sql = getSql()
     await sql`
       DELETE FROM vibeportal_assets
       WHERE asset_id = ${assetId}
