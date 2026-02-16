@@ -1,13 +1,11 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
 import { getStellarBandCoinBalance } from "@/lib/stellar-balance"
-import { getRequiredEnv } from "@/lib/env-validator"
-
-const sql = neon(getRequiredEnv('DATABASE_URL'))
 
 export async function getOrCreateRewardUser(sessionId: string) {
+  const sql = getDb()
   // Use UPSERT to handle concurrent requests atomically
   const users = await sql`
     INSERT INTO reward_users (session_id, total_tokens, level, last_active)
