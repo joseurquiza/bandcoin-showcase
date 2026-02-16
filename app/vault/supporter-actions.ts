@@ -1,13 +1,12 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { getCurrentUser } from "./auth-actions"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 export async function getAllArtistsForStaking() {
   try {
     console.log("[v0] Fetching all artists for staking")
+    const sql = getDb()
     const artists = await sql`
       SELECT 
         a.id,
@@ -41,6 +40,7 @@ export async function getMyStakes() {
       return { success: false, error: "Unauthorized", stakes: [] }
     }
 
+    const sql = getDb()
     const stakes = await sql`
       SELECT 
         s.*,
@@ -72,6 +72,7 @@ export async function stakeOnArtist(artistId: number, amount: number) {
       return { success: false, error: "Amount must be greater than 0" }
     }
 
+    const sql = getDb()
     await sql`
       INSERT INTO vault_stakes (supporter_id, artist_id, amount, staked_at, status)
       VALUES (${user.id}, ${artistId}, ${amount}, NOW(), 'active')
@@ -91,6 +92,7 @@ export async function unstakeFromArtist(stakeId: number) {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     await sql`
       UPDATE vault_stakes
       SET status = 'unstaked'
@@ -113,6 +115,7 @@ export async function getSupporterStats() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const [stats] = await sql`
       SELECT
         COUNT(DISTINCT artist_id) as artists_supported,
