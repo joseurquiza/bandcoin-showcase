@@ -95,16 +95,14 @@ export function WalletConnect() {
         setAddress(connection.address)
         setWalletType(connection.walletType as WalletType)
         setChainType(connection.chainType as ChainType)
-        console.log("[v0] Restored wallet connection:", connection.address)
       }
     } catch (error) {
-      console.error("[v0] Error restoring wallet connection:", error)
+      console.error("Error restoring wallet connection:", error)
     }
   }
 
   const connectMetaMask = async () => {
     if (typeof window === "undefined" || !window.ethereum) {
-      console.log("[v0] MetaMask connection failed: MetaMask not detected")
       toast.error("MetaMask not detected", {
         description: "Please install MetaMask extension",
       })
@@ -112,23 +110,18 @@ export function WalletConnect() {
     }
 
     setConnecting(true)
-    console.log("[v0] Starting MetaMask connection...")
 
     try {
-      console.log("[v0] Requesting MetaMask accounts...")
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       })
 
       const walletAddress = accounts[0]
-      console.log("[v0] MetaMask connected, address:", walletAddress)
       setAddress(walletAddress)
       setChainType("ethereum")
       setWalletType("metamask")
 
-      console.log("[v0] Saving wallet address to rewards system...")
       const result = await saveWalletAddress(walletAddress, "ethereum")
-      console.log("[v0] Save wallet result:", result)
 
       if (result.success) {
         toast.success("MetaMask connected", {
@@ -137,11 +130,11 @@ export function WalletConnect() {
         setIsModalOpen(false)
         window.dispatchEvent(new CustomEvent("walletConnected"))
       } else {
-        console.error("[v0] Failed to save wallet address:", result.error)
+        console.error("Failed to save wallet address:", result.error)
         toast.error("Failed to save wallet address")
       }
     } catch (error: any) {
-      console.error("[v0] MetaMask connection error:", error)
+      console.error("MetaMask connection error:", error)
       toast.error("Connection failed", {
         description: error.message || "Failed to connect MetaMask",
       })
@@ -152,7 +145,6 @@ export function WalletConnect() {
 
   const connectPhantom = async () => {
     if (typeof window === "undefined" || !window.solana) {
-      console.log("[v0] Phantom connection failed: Phantom not detected")
       toast.error("Phantom not detected", {
         description: "Please install Phantom wallet",
       })
@@ -160,21 +152,16 @@ export function WalletConnect() {
     }
 
     setConnecting(true)
-    console.log("[v0] Starting Phantom connection...")
 
     try {
-      console.log("[v0] Requesting Phantom connection...")
       const resp = await window.solana.connect()
       const walletAddress = resp.publicKey.toString()
-      console.log("[v0] Phantom connected, address:", walletAddress)
 
       setAddress(walletAddress)
       setChainType("solana")
       setWalletType("phantom")
 
-      console.log("[v0] Saving wallet address to rewards system...")
       const result = await saveWalletAddress(walletAddress, "solana")
-      console.log("[v0] Save wallet result:", result)
 
       if (result.success) {
         toast.success("Phantom connected", {
@@ -183,13 +170,13 @@ export function WalletConnect() {
         setIsModalOpen(false)
         window.dispatchEvent(new CustomEvent("walletConnected"))
       } else {
-        console.error("[v0] Failed to save wallet address:", result.error)
+        console.error("Failed to save wallet address:", result.error)
         toast.error("Failed to save wallet address", {
           description: result.error || "Please try again",
         })
       }
     } catch (error: any) {
-      console.error("[v0] Phantom connection error:", error)
+      console.error("Phantom connection error:", error)
       toast.error("Connection failed", {
         description: error.message || "Failed to connect Phantom",
       })
@@ -200,20 +187,15 @@ export function WalletConnect() {
 
   const connectBandCoin = async () => {
     setConnecting(true)
-    console.log("[v0] Starting BandCoin Wallet (Freighter) connection...")
 
     try {
-      console.log("[v0] Requesting Freighter access...")
       const publicKey = await freighter.connect()
-      console.log("[v0] Freighter connected, public key:", publicKey)
 
       setAddress(publicKey)
       setChainType("stellar")
       setWalletType("bandcoin")
 
-      console.log("[v0] Saving Stellar wallet address to rewards system...")
       const result = await saveWalletAddress(publicKey, "stellar")
-      console.log("[v0] Save wallet result:", result)
 
       if (result.success) {
         toast.success("BandCoin Wallet connected", {
@@ -222,13 +204,13 @@ export function WalletConnect() {
         setIsModalOpen(false)
         window.dispatchEvent(new CustomEvent("walletConnected"))
       } else {
-        console.error("[v0] Failed to save wallet address:", result.error)
+        console.error("Failed to save wallet address:", result.error)
         toast.error("Failed to save wallet address", {
           description: result.error || "Please try again",
         })
       }
     } catch (error: any) {
-      console.error("[v0] BandCoin Wallet connection error:", error)
+      console.error("BandCoin Wallet connection error:", error)
       toast.error("Connection failed", {
         description: error.message || "Failed to connect BandCoin Wallet. Please ensure Freighter is installed.",
       })
@@ -299,17 +281,26 @@ export function WalletConnect() {
       await vaultSignOut()
       setEmailUser(null)
       toast.success("Signed out successfully")
+      window.location.reload()
     } else {
-      await clearWalletAddress()
-
+      // Clear local state first
+      setAddress(null)
+      setWalletType(null)
+      
+      // Disconnect Freighter if using BandCoin wallet
       if (walletType === "bandcoin") {
         freighter.disconnect()
       }
-      setAddress(null)
-      setWalletType(null)
+      
+      // Clear from database
+      await clearWalletAddress()
+      
       toast.success("Wallet disconnected")
-
-      window.location.reload()
+      
+      // Reload to clear all wallet state
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
     }
   }
 
