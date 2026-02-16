@@ -1,17 +1,21 @@
 import { neon } from "@neondatabase/serverless"
 
-/**
- * Lazy-loaded database connection
- * This prevents build-time errors by only initializing the connection at runtime
- */
-let _sql: ReturnType<typeof neon> | null = null
+let _db: ReturnType<typeof neon> | null = null
 
+/**
+ * Get lazy-loaded database connection
+ * Only initializes when first called at runtime, not during build
+ */
 export function getDb() {
-  if (!_sql) {
+  if (!_db) {
     const dbUrl = process.env.DATABASE_URL
     if (!dbUrl) {
-      throw new Error("DATABASE_URL environment variable is not set")
+      throw new Error('DATABASE_URL environment variable is required at runtime')
     }
+    _db = neon(dbUrl)
+  }
+  return _db
+}
     _sql = neon(dbUrl)
   }
   return _sql

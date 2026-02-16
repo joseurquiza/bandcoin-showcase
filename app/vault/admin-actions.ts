@@ -1,10 +1,8 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { getCurrentUser } from "./auth-actions"
 import { stellarVault } from "@/lib/stellar-vault"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 export async function getAllArtists() {
   try {
@@ -13,6 +11,7 @@ export async function getAllArtists() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const artists = await sql`
       SELECT 
         a.id,
@@ -44,6 +43,7 @@ export async function getAllSupporters() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const supporters = await sql`
       SELECT 
         u.id,
@@ -75,6 +75,7 @@ export async function getRecentTransactions(limit = 20) {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const transactions = await sql`
       SELECT 
         t.id,
@@ -112,6 +113,7 @@ export async function addTransaction(
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     // Insert transaction
     await sql`
       INSERT INTO vault_transactions (artist_id, transaction_type, category, amount, description, created_by)
@@ -153,6 +155,7 @@ export async function getVaultStats() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const [stats] = await sql`
       SELECT
         (SELECT COUNT(*) FROM vault_artists) as total_artists,
@@ -182,6 +185,7 @@ export async function distributeVaultRevenue(artistId: number, amount: number) {
     const publicKey = user.stellar_public_key || user.wallet_address
     const txXDR = await stellarVault.distributeRevenue(publicKey as string, artistId, amount.toString())
 
+    const sql = getDb()
     // Record distribution in database
     await sql`
       INSERT INTO vault_transactions (artist_id, transaction_type, category, amount, description, created_by)
