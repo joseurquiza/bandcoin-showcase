@@ -3,8 +3,9 @@
 import { neon } from "@neondatabase/serverless"
 import { cookies } from "next/headers"
 import { getStellarBandCoinBalance } from "@/lib/stellar-balance"
+import { getRequiredEnv } from "@/lib/env-validator"
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(getRequiredEnv('DATABASE_URL'))
 
 export async function getOrCreateRewardUser(sessionId: string) {
   // Use UPSERT to handle concurrent requests atomically

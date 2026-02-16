@@ -1,8 +1,9 @@
 "use server"
 
 import { neon } from "@neondatabase/serverless"
+import { getRequiredEnv } from "@/lib/env-validator"
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(getRequiredEnv('DATABASE_URL'))
 
 export interface SavedAsset {
   id: number

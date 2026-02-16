@@ -4,8 +4,9 @@ import { neon } from "@neondatabase/serverless"
 import { stellarVault } from "@/lib/stellar-vault"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
+import { getRequiredEnv } from "@/lib/env-validator"
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(getRequiredEnv('DATABASE_URL'))
 
 async function getUserFromToken() {
   const cookieStore = await cookies()

@@ -6,8 +6,9 @@ import { generateText } from "ai"
 import { checkAIUsageWithBandCoin, incrementUsage } from "@/lib/ai-usage-limiter"
 import { checkUserAuthentication } from "@/lib/auth-check"
 import { verifyPaymentByBalance } from "@/lib/stellar-payment"
+import { getRequiredEnv } from "@/lib/env-validator"
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(getRequiredEnv('DATABASE_URL'))
 
 export async function getOrCreateSession() {
   const cookieStore = await cookies()
@@ -17,9 +18,10 @@ export async function getOrCreateSession() {
     sessionId = crypto.randomUUID()
     cookieStore.set("session_id", sessionId, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "strict",
       maxAge: 60 * 60 * 24 * 365,
+      path: '/',
     })
   }
 
