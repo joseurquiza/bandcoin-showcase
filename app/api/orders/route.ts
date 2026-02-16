@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
+import { getRequiredEnv } from "@/lib/env-validator"
+import { rateLimiters, getClientIdentifier, createRateLimitResponse } from "@/lib/rate-limiter"
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(getRequiredEnv('DATABASE_URL'))
 
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -14,6 +16,13 @@ function sanitizeInput(input: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientId = getClientIdentifier(request)
+    const rateLimitResult = await rateLimiters.api.check(clientId)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult.reset)
+    }
+
     const body = await request.json()
 
     const {
@@ -105,10 +114,17 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting for admin endpoint
+    const clientId = getClientIdentifier(request)
+    const rateLimitResult = await rateLimiters.api.check(`admin:${clientId}`)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult.reset)
+    }
+
     const authHeader = request.headers.get("authorization")
 
-    // For now, check for a simple admin key - replace with proper auth in production
-    const adminKey = process.env.ADMIN_API_KEY
+    // SECURITY: Require strong admin API key - no fallback
+    const adminKey = getRequiredEnv('ADMIN_API_KEY')
 
     if (!authHeader || authHeader !== `Bearer ${adminKey}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

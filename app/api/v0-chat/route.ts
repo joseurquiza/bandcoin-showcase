@@ -2,6 +2,7 @@ import { v0 } from "v0-sdk"
 import type { NextRequest } from "next/server"
 import { saveGeneratedProject } from "./track-project"
 import { checkAIUsage, incrementAIUsage } from "@/lib/ai-usage-limiter"
+import { rateLimiters, getClientIdentifier, createRateLimitResponse } from "@/lib/rate-limiter"
 
 const V0_API_BASE = "https://api.v0.dev/v1"
 
@@ -30,6 +31,13 @@ async function fetchV0API(endpoint: string, options: RequestInit = {}) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientId = getClientIdentifier(request)
+    const rateLimitResult = await rateLimiters.ai.check(clientId)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult.reset)
+    }
+
     const usageCheck = await checkAIUsage("v0-chat")
     if (!usageCheck.allowed) {
       return new Response(

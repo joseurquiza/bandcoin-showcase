@@ -2,9 +2,11 @@
 
 import { neon } from "@neondatabase/serverless"
 import { cookies } from "next/headers"
-import { verify } from "jsonwebtoken"
+import { jwtVerify } from "jose"
+import { getRequiredEnv } from "@/lib/env-validator"
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(getRequiredEnv('DATABASE_URL'))
+const JWT_SECRET = new TextEncoder().encode(getRequiredEnv('JWT_SECRET'))
 
 async function getCurrentProfile() {
   const cookieStore = await cookies()
@@ -15,8 +17,9 @@ async function getCurrentProfile() {
   }
 
   try {
-    const decoded = verify(token, process.env.VAULT_JWT_SECRET!) as { profileId: number }
-    const profiles = await sql`SELECT * FROM bt_profiles WHERE id = ${decoded.profileId}`
+    const verified = await jwtVerify(token, JWT_SECRET)
+    const { profileId } = verified.payload as { profileId: number }
+    const profiles = await sql`SELECT * FROM bt_profiles WHERE id = ${profileId}`
     return profiles[0] || null
   } catch {
     return null
@@ -29,14 +32,29 @@ export async function sendMessage(toProfileId: number, subject: string, message:
     return { success: false, error: "Not authenticated" }
   }
 
+  // Input validation
+  if (!subject || subject.trim().length === 0) {
+    return { success: false, error: "Subject is required" }
+  }
+  if (subject.length > 200) {
+    return { success: false, error: "Subject must be 200 characters or less" }
+  }
+  if (!message || message.trim().length === 0) {
+    return { success: false, error: "Message is required" }
+  }
+  if (message.length > 5000) {
+    return { success: false, error: "Message must be 5000 characters or less" }
+  }
+
   try {
     await sql`
       INSERT INTO bt_messages (from_profile_id, to_profile_id, subject, message)
-      VALUES (${profile.id}, ${toProfileId}, ${subject}, ${message})
+      VALUES (${profile.id}, ${toProfileId}, ${subject.trim()}, ${message.trim()})
     `
     return { success: true }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error) {
+    console.error("Send message error:", error)
+    return { success: false, error: "Failed to send message" }
   }
 }
 
