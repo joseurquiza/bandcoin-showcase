@@ -16,7 +16,3 @@ export function getDb() {
   }
   return _db
 }
-    _sql = neon(dbUrl)
-  }
-  return _sql
-}
