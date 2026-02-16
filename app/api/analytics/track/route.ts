@@ -1,7 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { neon } from "@neondatabase/serverless"
-
-const sql = neon(process.env.DATABASE_URL!)
+import { getDb } from "@/lib/db"
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { eventType, pagePath, appName, sessionId, userAgent, referrer, metadata } = data
 
+    const sql = getDb()
     // Insert event with IP address
     await sql`
       INSERT INTO analytics_events (

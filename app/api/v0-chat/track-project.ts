@@ -1,8 +1,6 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
-
-const sql = neon(process.env.DATABASE_URL!)
+import { getDb } from "@/lib/db"
 
 export async function saveGeneratedProject(data: {
   v0ChatId: string
@@ -14,6 +12,7 @@ export async function saveGeneratedProject(data: {
   try {
     console.log("[v0] Saving generated project:", data)
 
+    const sql = getDb()
     await sql`
       INSERT INTO sitebuilder_projects (v0_chat_id, v0_project_id, website_idea, demo_url, conversation_history, updated_at)
       VALUES (
@@ -48,6 +47,7 @@ export async function listSiteBuilderProjects() {
   try {
     console.log("[v0] Fetching Site Builder projects from database")
 
+    const sql = getDb()
     const projects = await sql`
       SELECT 
         id,
@@ -83,6 +83,7 @@ export async function listSiteBuilderProjects() {
 
 export async function getProjectByChatId(chatId: string) {
   try {
+    const sql = getDb()
     const result = await sql`
       SELECT 
         id,

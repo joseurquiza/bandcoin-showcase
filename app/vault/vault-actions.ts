@@ -1,11 +1,9 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { stellarVault } from "@/lib/stellar-vault"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 async function getUserFromToken() {
   const cookieStore = await cookies()
@@ -26,6 +24,7 @@ export async function getVaultStats(artistId: number) {
     // Get on-chain vault info
     const vaultInfo = await stellarVault.getVaultInfo(artistId)
 
+    const sql = getDb()
     // Get database transaction history
     const transactions = await sql`
       SELECT 
@@ -88,6 +87,7 @@ export async function depositToVault(artistId: number, amount: string) {
     // Generate transaction XDR
     const txXDR = await stellarVault.deposit(publicKey as string, artistId, amount)
 
+    const sql = getDb()
     // Record intent in database (actual stake recorded after blockchain confirmation)
     await sql`
       INSERT INTO vault_stakes (supporter_id, artist_id, amount, status)
@@ -118,6 +118,7 @@ export async function withdrawFromVault(artistId: number, shares: string) {
     // Generate transaction XDR
     const txXDR = await stellarVault.withdraw(publicKey as string, artistId, shares)
 
+    const sql = getDb()
     // Update stake status in database
     await sql`
       UPDATE vault_stakes

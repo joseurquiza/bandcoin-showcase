@@ -1,8 +1,6 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
-
-const sql = neon(process.env.DATABASE_URL!)
+import { getDb } from "@/lib/db"
 
 export async function submitOrderAction(data: {
   name: string
@@ -14,6 +12,7 @@ export async function submitOrderAction(data: {
   timeline: string
 }) {
   try {
+    const sql = getDb()
     // Insert order into database
     const result = await sql`
       INSERT INTO website_orders (
@@ -58,6 +57,7 @@ export async function submitWebsiteOrderAction(data: {
   v0ChatId: string | null
 }) {
   try {
+    const sql = getDb()
     // Insert order into database
     const result = await sql`
       INSERT INTO website_orders (

@@ -1,10 +1,9 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
 
-const sql = neon(process.env.DATABASE_URL!)
 const JWT_SECRET = process.env.VAULT_JWT_SECRET || "your-secret-key"
 
 async function getAdminUser() {
@@ -17,6 +16,7 @@ async function getAdminUser() {
     const decoded = jwt.verify(token, JWT_SECRET) as any
     if (decoded.role !== "admin") return null
 
+    const sql = getDb()
     const users = await sql`SELECT * FROM vault_users WHERE id = ${decoded.userId}`
     return users[0] || null
   } catch {
@@ -31,6 +31,7 @@ export async function getAllWithdrawalRequests() {
       return { success: false, message: "Unauthorized" }
     }
 
+    const sql = getDb()
     const withdrawals = await sql`
       SELECT 
         rw.*,
@@ -79,6 +80,7 @@ export async function processWithdrawal(
       return { success: false, message: "Unauthorized" }
     }
 
+    const sql = getDb()
     // Get withdrawal details
     const withdrawals = await sql`
       SELECT * FROM reward_withdrawals WHERE id = ${withdrawalId}
@@ -138,6 +140,7 @@ export async function updateWithdrawalStatus(withdrawalId: number, status: "proc
       return { success: false, message: "Unauthorized" }
     }
 
+    const sql = getDb()
     await sql`
       UPDATE reward_withdrawals
       SET status = ${status}

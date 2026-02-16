@@ -1,9 +1,7 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { getCurrentUser } from "./auth-actions"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 export async function getArtistProfile() {
   try {
@@ -12,6 +10,7 @@ export async function getArtistProfile() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const [artist] = await sql`
       SELECT * FROM vault_artists
       WHERE user_id = ${user.id}
@@ -35,6 +34,7 @@ export async function updateArtistProfile(bio: string, genre: string) {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     await sql`
       UPDATE vault_artists
       SET bio = ${bio}, genre = ${genre}, updated_at = NOW()
@@ -55,6 +55,7 @@ export async function getArtistTransactions() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const transactions = await sql`
       SELECT t.*
       FROM vault_transactions t
@@ -78,6 +79,7 @@ export async function getArtistStakes() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const stakes = await sql`
       SELECT 
         s.*,
@@ -104,6 +106,7 @@ export async function getReinvestmentRules() {
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     const rules = await sql`
       SELECT r.*
       FROM vault_reinvestment_rules r
@@ -126,6 +129,7 @@ export async function updateReinvestmentRule(ruleId: number, percentage: number,
       return { success: false, error: "Unauthorized" }
     }
 
+    const sql = getDb()
     await sql`
       UPDATE vault_reinvestment_rules r
       SET percentage = ${percentage}, is_active = ${isActive}

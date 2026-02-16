@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { BANDCOIN_PRODUCTS } from "@/lib/products"
 import { addBandCoin } from "@/lib/ai-usage-limiter"
+import { getRequiredEnv } from "@/lib/env-validator"
 
 export async function POST(req: Request) {
   const body = await req.text()
@@ -15,10 +16,12 @@ export async function POST(req: Request) {
   let event
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET || "")
+    // SECURITY: Must have STRIPE_WEBHOOK_SECRET set - no fallback allowed
+    const webhookSecret = getRequiredEnv('STRIPE_WEBHOOK_SECRET')
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err: any) {
-    console.error("[v0] Webhook signature verification failed:", err.message)
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 })
+    console.error("Webhook signature verification failed:", err.message)
+    return NextResponse.json({ error: "Webhook verification failed" }, { status: 400 })
   }
 
   // Handle successful payment
@@ -32,7 +35,6 @@ export async function POST(req: Request) {
     if (product && session.client_reference_id) {
       // Credit BandCoins to user's account
       await addBandCoin(session.client_reference_id, product.bandcoins, "stripe_purchase")
-      console.log(`[v0] Credited ${product.bandcoins} BC to ${session.client_reference_id}`)
     }
   }
 

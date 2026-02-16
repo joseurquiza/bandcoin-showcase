@@ -27,13 +27,20 @@ export default function SignUpPage() {
     setError("")
     setLoading(true)
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters")
+    // Client-side validation
+    if (!displayName || displayName.trim().length < 2) {
+      setError("Display name must be at least 2 characters")
       setLoading(false)
       return
     }
 
-    const result = await signUp(email, password, displayName, role)
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long")
+      setLoading(false)
+      return
+    }
+
+    const result = await signUp(email.trim(), password, displayName.trim(), role)
 
     if (result.success) {
       router.push("/vault")
@@ -90,10 +97,11 @@ export default function SignUpPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="At least 8 characters"
+                placeholder="Min 8 chars with uppercase, lowercase, number & special char"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={8}
                 className="bg-zinc-800 border-zinc-700 text-white"
               />
             </div>

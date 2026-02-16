@@ -1,13 +1,11 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
 import { generateText } from "ai"
 import { checkAIUsageWithBandCoin, incrementUsage } from "@/lib/ai-usage-limiter"
 import { checkUserAuthentication } from "@/lib/auth-check"
 import { verifyPaymentByBalance } from "@/lib/stellar-payment"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 export async function getOrCreateSession() {
   const cookieStore = await cookies()
@@ -17,9 +15,10 @@ export async function getOrCreateSession() {
     sessionId = crypto.randomUUID()
     cookieStore.set("session_id", sessionId, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "strict",
       maxAge: 60 * 60 * 24 * 365,
+      path: '/',
     })
   }
 
@@ -130,6 +129,7 @@ export async function saveCollectible(data: {
       }
     }
 
+    const sql = getDb()
     const userResult = await sql`
       SELECT stellar_address FROM reward_users WHERE session_id = ${rewardSessionId}
     `
@@ -192,6 +192,7 @@ export async function getMyCollectibles(): Promise<{ success: boolean; collectib
       }
     }
 
+    const sql = getDb()
     // Get wallet address from rewards system
     const userResult = await sql`
       SELECT stellar_address FROM reward_users WHERE session_id = ${sessionId}
@@ -229,6 +230,7 @@ export async function getMyCollectibles(): Promise<{ success: boolean; collectib
 
 export async function getPublicCollectibles(): Promise<{ success: boolean; collectibles?: any[]; error?: string }> {
   try {
+    const sql = getDb()
     const collectibles = await sql`
       SELECT id, name, description, material, shape, color_palette, rarity, image_url, created_at
       FROM keepsake_tokens 
@@ -414,6 +416,7 @@ export async function verifyCollectiblePayment(
     // Record the paid usage
     await incrementUsage(sessionId, "collectibles")
 
+    const sql = getDb()
     // Store transaction hash for audit trail
     await sql`
       INSERT INTO ai_payment_transactions (session_id, feature, amount, transaction_hash, created_at)
@@ -443,6 +446,7 @@ export async function deleteCollectible(collectibleId: number): Promise<{ succes
       }
     }
 
+    const sql = getDb()
     // Get wallet address from rewards system
     const userResult = await sql`
       SELECT stellar_address FROM reward_users WHERE session_id = ${sessionId}
@@ -497,6 +501,7 @@ export async function sendCollectible(
       }
     }
 
+    const sql = getDb()
     // Get sender's wallet address
     const userResult = await sql`
       SELECT stellar_address FROM reward_users WHERE session_id = ${sessionId}
