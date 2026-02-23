@@ -1,12 +1,11 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 export async function getMyProfile() {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
 
@@ -29,6 +28,7 @@ export async function getMyProfile() {
 
 export async function toggleGreenRoom(inGreenRoom: boolean) {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
 
@@ -51,6 +51,7 @@ export async function toggleGreenRoom(inGreenRoom: boolean) {
 
 export async function getGreenRoomMusicians() {
   try {
+    const sql = getDb()
     const musicians = await sql`
       SELECT 
         id,
@@ -91,6 +92,7 @@ export async function createOrUpdateProfile(data: {
   soundcloud_url?: string
 }) {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
     const walletAddress = cookieStore.get("wallet_address")?.value
