@@ -1,10 +1,8 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
 import { verify } from "jsonwebtoken"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 async function getCurrentProfile() {
   const cookieStore = await cookies()

@@ -1,21 +1,15 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
-
-const sql = neon(process.env.DATABASE_URL!)
+import { getDb } from "@/lib/db"
 
 // Track a page view or event
 export async function trackEvent(data: {
   eventType: string
-  pagePath: string
-  appName?: string
-  sessionId: string
-  userAgent?: string
-  referrer?: string
-  metadata?: Record<string, unknown>
+  userId?: string
+  metadata?: any
 }) {
   try {
-    // Also removed screen_width/screen_height which don't exist in table
+    const sql = getDb()
     await sql`
       INSERT INTO analytics_events (
         event_type, page_path, app_name, session_id, 

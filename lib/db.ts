@@ -10,10 +10,16 @@ export function getDb() {
   if (!_db) {
     // Use POSTGRES_URL from Supabase integration
     const dbUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
+    
+    console.log('[v0] Database connection - POSTGRES_URL exists:', !!process.env.POSTGRES_URL)
+    console.log('[v0] Database connection - DATABASE_URL exists:', !!process.env.DATABASE_URL)
+    
     if (!dbUrl) {
-      throw new Error('POSTGRES_URL or DATABASE_URL environment variable is required at runtime')
+      throw new Error('POSTGRES_URL or DATABASE_URL environment variable is required at runtime. Please set one of these environment variables.')
     }
+    
     _db = neon(dbUrl)
+    console.log('[v0] Database connection initialized successfully')
   }
   return _db
 }
