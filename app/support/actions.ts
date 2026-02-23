@@ -1,10 +1,8 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { generateText } from "ai"
 import { checkAIUsage, incrementAIUsage } from "@/lib/ai-usage-limiter"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 interface Message {
   sender_type: string
@@ -17,6 +15,7 @@ export async function createSupportSession() {
   const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   try {
+    const sql = getDb()
     await sql`
       INSERT INTO support_sessions (session_id, status)
       VALUES (${sessionId}, 'active')
@@ -36,6 +35,7 @@ export async function createSupportSession() {
 
 export async function sendSupportMessage(sessionId: string, message: string, userEmail?: string, userName?: string) {
   try {
+    const sql = getDb()
     const usageCheck = await checkAIUsage("support")
 
     await sql`
@@ -111,6 +111,7 @@ Provide a helpful, concise response. If the user needs specific technical help o
 
 export async function escalateToHuman(sessionId: string) {
   try {
+    const sql = getDb()
     await sql`
       UPDATE support_sessions 
       SET status = 'escalated', 
@@ -133,6 +134,7 @@ export async function escalateToHuman(sessionId: string) {
 
 export async function getChatHistory(sessionId: string) {
   try {
+    const sql = getDb()
     const messages = await sql`
       SELECT sender_type, sender_name, message, created_at
       FROM support_messages
@@ -149,6 +151,7 @@ export async function getChatHistory(sessionId: string) {
 
 export async function getEscalatedSessions() {
   try {
+    const sql = getDb()
     const sessions = await sql`
       SELECT 
         s.session_id,
@@ -173,6 +176,7 @@ export async function getEscalatedSessions() {
 
 export async function sendAdminMessage(sessionId: string, message: string, adminName: string) {
   try {
+    const sql = getDb()
     await sql`
       INSERT INTO support_messages (session_id, sender_type, sender_name, message)
       VALUES (${sessionId}, 'admin', ${adminName}, ${message})
@@ -193,6 +197,7 @@ export async function sendAdminMessage(sessionId: string, message: string, admin
 
 export async function resolveSession(sessionId: string) {
   try {
+    const sql = getDb()
     await sql`
       UPDATE support_sessions 
       SET status = 'resolved',
