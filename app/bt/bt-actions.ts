@@ -1,11 +1,10 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 async function getAuthenticatedUser() {
+  const sql = getDb()
   const cookieStore = await cookies()
   const sessionId = cookieStore.get("session_id")?.value
 
@@ -49,15 +48,13 @@ export async function createProfile(formData: {
   bio?: string
   instruments: string[]
   genres: string[]
-  experienceLevel: string
   location?: string
-  spotifyUrl?: string
-  soundcloudUrl?: string
-  instagramUrl?: string
-  lookingFor: string[]
+  experienceLevel?: string
+  availableForWork?: boolean
+  instrumentProficiency?: string
 }) {
   try {
-    console.log("[v0] createProfile action started")
+    const sql = getDb()
     const auth = await getAuthenticatedUser()
     console.log("[v0] Authentication result:", auth ? "authenticated" : "not authenticated")
 

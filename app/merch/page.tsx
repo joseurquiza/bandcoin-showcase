@@ -1,10 +1,8 @@
 export const dynamic = "force-dynamic"
 
 import { cookies } from "next/headers"
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import MerchClient from "./merch-client"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 async function getCollectibles() {
   try {

@@ -1,7 +1,7 @@
 "use server"
 
 import { cookies } from "next/headers"
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import {
   getProducts,
   getProductVariants,
@@ -14,8 +14,6 @@ import {
   getProductPrintfiles, // Added import for printfiles
   getStoreId,
 } from "@/lib/printful-client"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 function getSessionId() {
   return cookies().get("session_id")?.value || ""
