@@ -8,7 +8,7 @@ export async function getOrCreateRewardUser(sessionId: string) {
   const sql = getDb()
   // Use UPSERT to handle concurrent requests atomically
   const users = await sql`
-    INSERT INTO reward_users (session_id, total_tokens, level, last_active)
+    INSERT INTO showcase_reward_users (session_id, total_tokens, level, last_active)
     VALUES (${sessionId}, 0, 1, NOW())
     ON CONFLICT (session_id) 
     DO UPDATE SET last_active = NOW()
@@ -34,7 +34,7 @@ export async function trackActivity(activityType: string, appName: string | null
 
     const todayEarnings = await sql`
       SELECT COALESCE(SUM(tokens_earned), 0) as total_today
-      FROM reward_activities 
+      FROM showcase_reward_activities 
       WHERE user_id = ${user.id} 
       AND created_at >= ${today.toISOString()}
     `
@@ -51,7 +51,7 @@ export async function trackActivity(activityType: string, appName: string | null
 
     // Check if activity is eligible for rewards
     const rules = await sql`
-      SELECT * FROM reward_rules 
+      SELECT * FROM showcase_reward_rules 
       WHERE activity_type = ${activityType} 
       AND (app_name = ${appName} OR app_name IS NULL)
       AND is_active = true
@@ -65,7 +65,7 @@ export async function trackActivity(activityType: string, appName: string | null
     if (rule.max_per_day) {
       const todayActivities = await sql`
         SELECT COUNT(*) as count 
-        FROM reward_activities 
+        FROM showcase_reward_activities 
         WHERE user_id = ${user.id} 
         AND activity_type = ${activityType}
         AND app_name = ${appName}
@@ -86,7 +86,7 @@ export async function trackActivity(activityType: string, appName: string | null
 
     // Award tokens
     await sql`
-      INSERT INTO reward_activities (user_id, activity_type, app_name, tokens_earned, metadata)
+      INSERT INTO showcase_reward_activities (user_id, activity_type, app_name, tokens_earned, metadata)
       VALUES (${user.id}, ${activityType}, ${appName}, ${tokensToAward}, ${JSON.stringify(metadata)})
     `
 
@@ -94,7 +94,7 @@ export async function trackActivity(activityType: string, appName: string | null
     const newLevel = Math.floor(newTotal / 1000) + 1
 
     await sql`
-      UPDATE reward_users 
+      UPDATE showcase_reward_users 
       SET total_tokens = ${newTotal}, level = ${newLevel}
       WHERE id = ${user.id}
     `
@@ -139,8 +139,8 @@ export async function getUserRewards() {
 
     const activities = await sql`
       SELECT ra.*, rr.description 
-      FROM reward_activities ra
-      LEFT JOIN reward_rules rr ON ra.activity_type = rr.activity_type 
+      FROM showcase_reward_activities ra
+      LEFT JOIN showcase_reward_rules rr ON ra.activity_type = rr.activity_type 
         AND (ra.app_name = rr.app_name OR rr.app_name IS NULL)
       WHERE ra.user_id = ${user.id}
       ORDER BY ra.created_at DESC
@@ -149,7 +149,7 @@ export async function getUserRewards() {
 
     const leaderboard = await sql`
       SELECT session_id, display_name, total_tokens, level
-      FROM reward_users
+      FROM showcase_reward_users
       ORDER BY total_tokens DESC
       LIMIT 10
     `
@@ -203,7 +203,7 @@ export async function checkDailyBonus() {
     today.setHours(0, 0, 0, 0)
 
     const todayBonus = await sql`
-      SELECT * FROM reward_activities
+      SELECT * FROM showcase_reward_activities
       WHERE user_id = ${user.id}
       AND activity_type = 'daily_login'
       AND created_at >= ${today.toISOString()}
@@ -251,13 +251,13 @@ export async function requestWithdrawal(stellarAddress: string, amount: number) 
 
     // Create withdrawal request
     await sql`
-      INSERT INTO reward_withdrawals (user_id, stellar_address, amount, status)
+      INSERT INTO showcase_reward_withdrawals (user_id, stellar_address, amount, status)
       VALUES (${user.id}, ${stellarAddress}, ${amount}, 'pending')
     `
 
     // Update pending withdrawals
     await sql`
-      UPDATE reward_users 
+      UPDATE showcase_reward_users 
       SET pending_withdrawals = pending_withdrawals + ${amount}
       WHERE id = ${user.id}
     `
@@ -282,7 +282,7 @@ export async function getUserWithdrawals() {
     const user = await getOrCreateRewardUser(sessionId)
 
     const withdrawals = await sql`
-      SELECT * FROM reward_withdrawals
+      SELECT * FROM showcase_reward_withdrawals
       WHERE user_id = ${user.id}
       ORDER BY created_at DESC
     `
@@ -334,7 +334,7 @@ export async function getRewardRules() {
   try {
     const sql = getDb()
     const rules = await sql`
-      SELECT * FROM reward_rules
+      SELECT * FROM showcase_reward_rules
       WHERE is_active = true
       ORDER BY tokens_awarded DESC
     `
@@ -367,13 +367,13 @@ export async function saveWalletAddress(walletAddress: string, walletType: "ethe
     // Update reward user with wallet info
     if (walletType === "stellar") {
       await sql`
-        UPDATE reward_users 
+        UPDATE showcase_reward_users 
         SET stellar_address = ${walletAddress}, wallet_type = ${walletType}
         WHERE id = ${user.id}
       `
     } else {
       await sql`
-        UPDATE reward_users 
+        UPDATE showcase_reward_users 
         SET eth_address = ${walletAddress}, wallet_type = ${walletType}
         WHERE id = ${user.id}
       `
@@ -400,7 +400,7 @@ export async function clearWalletAddress() {
     const user = await getOrCreateRewardUser(sessionId)
 
     await sql`
-      UPDATE reward_users 
+      UPDATE showcase_reward_users 
       SET stellar_address = NULL, eth_address = NULL, wallet_type = NULL
       WHERE id = ${user.id}
     `
