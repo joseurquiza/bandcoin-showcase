@@ -19,6 +19,7 @@ export async function getOrCreateRewardUser(sessionId: string) {
 
 export async function trackActivity(activityType: string, appName: string | null, metadata: any = {}) {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value || `session_${Date.now()}_${Math.random()}`
 
@@ -113,6 +114,7 @@ export async function trackActivity(activityType: string, appName: string | null
 
 export async function getUserRewards() {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
 
@@ -189,6 +191,7 @@ export async function getUserRewards() {
 
 export async function checkDailyBonus() {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
 
@@ -219,6 +222,7 @@ export async function checkDailyBonus() {
 
 export async function requestWithdrawal(stellarAddress: string, amount: number) {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
 
@@ -267,6 +271,7 @@ export async function requestWithdrawal(stellarAddress: string, amount: number) 
 
 export async function getUserWithdrawals() {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
 
@@ -327,6 +332,7 @@ export async function getAvailableBalance() {
 
 export async function getRewardRules() {
   try {
+    const sql = getDb()
     const rules = await sql`
       SELECT * FROM reward_rules
       WHERE is_active = true
@@ -345,6 +351,7 @@ export async function getRewardRules() {
 
 export async function saveWalletAddress(walletAddress: string, walletType: "ethereum" | "stellar" = "stellar") {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     let sessionId = cookieStore.get("session_id")?.value
 
@@ -382,6 +389,7 @@ export async function saveWalletAddress(walletAddress: string, walletType: "ethe
 
 export async function clearWalletAddress() {
   try {
+    const sql = getDb()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get("session_id")?.value
 
