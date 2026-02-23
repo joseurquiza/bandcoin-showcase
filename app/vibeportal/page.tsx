@@ -368,7 +368,7 @@ const VibePortal = () => {
 
       // Step 2: Build the prompt
       setStatusMessage(
-        `Synthesizing ${mode === "video" ? "Video Frames" : "Image"} with ${mode === "video" ? "Veo" : "Gemini 3 Nano Banana"} pipeline...`,
+        `Synthesizing ${mode === "video" ? "Video Frames" : "Image"} with ${mode === "video" ? "Veo" : "Gemini 2.0 Flash"} pipeline...`,
       )
 
       // Add Camera Style
@@ -537,7 +537,7 @@ const VibePortal = () => {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-white/50 font-mono">Gemini 3 Nano Banana x Veo</p>
+              <p className="text-[10px] text-white/50 font-mono">Gemini 2.0 Flash x Veo</p>
               <Link href="/">
                 <Button
                   variant="outline"
@@ -561,7 +561,7 @@ const VibePortal = () => {
                 <h1 className="text-xl font-bold tracking-tight">
                   VibePortal <span className="font-light text-white/50">Studio</span>
                 </h1>
-                <p className="text-xs text-white/50 font-mono">Gemini 3 Nano Banana x Veo Engine</p>
+                <p className="text-xs text-white/50 font-mono">Gemini 2.0 Flash x Veo Engine</p>
               </div>
             </div>
 
