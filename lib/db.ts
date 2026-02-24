@@ -8,30 +8,29 @@ let _db: ReturnType<typeof neon> | null = null
  */
 export function getDb() {
   if (!_db) {
-    // Use POSTGRES_URL from Supabase integration
-    let dbUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
-    
-    console.log('[v0] Database connection - POSTGRES_URL exists:', !!process.env.POSTGRES_URL)
-    console.log('[v0] Database connection - DATABASE_URL exists:', !!process.env.DATABASE_URL)
+    // Try multiple Supabase/Postgres connection URLs in order of preference
+    // POSTGRES_URL_NON_POOLING is best for raw SQL queries
+    let dbUrl = process.env.POSTGRES_URL_NON_POOLING || 
+                process.env.POSTGRES_URL || 
+                process.env.DATABASE_URL
     
     if (!dbUrl) {
-      throw new Error('POSTGRES_URL or DATABASE_URL environment variable is required at runtime. Please set one of these environment variables.')
-    }
-    
-    // Log the URL format (without credentials) for debugging
-    const urlMatch = dbUrl.match(/^(postgresql?:\/\/)[^@]+(@.+)$/)
-    if (urlMatch) {
-      console.log('[v0] Database URL format: postgresql://***' + urlMatch[2])
+      throw new Error('Database connection URL not found. Please set POSTGRES_URL, POSTGRES_URL_NON_POOLING, or DATABASE_URL environment variable.')
     }
     
     // Ensure URL starts with postgresql:// (not postgres://)
     if (dbUrl.startsWith('postgres://')) {
       dbUrl = dbUrl.replace('postgres://', 'postgresql://')
-      console.log('[v0] Converted postgres:// to postgresql://')
+    }
+    
+    // Validate URL format
+    if (!dbUrl.match(/^postgresql:\/\/.+@.+\/.+/)) {
+      console.error('[v0] Invalid database URL format. Expected: postgresql://user:password@host/database')
+      console.error('[v0] Received URL starts with:', dbUrl.substring(0, 20) + '...')
+      throw new Error('Invalid database connection string format. Please check your POSTGRES_URL environment variable.')
     }
     
     _db = neon(dbUrl)
-    console.log('[v0] Database connection initialized successfully')
   }
   return _db
 }
