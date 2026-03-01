@@ -4,18 +4,25 @@ let _db: ReturnType<typeof postgres> | null = null
 
 /**
  * Lazy-loaded Supabase Postgres connection using the `postgres` package.
- * Works with any standard Postgres URL including Supabase direct connections.
- * Only initializes at runtime, never during build.
+ * Uses the Supabase connection pooler (Prisma URL, port 6543) which is
+ * required for Vercel serverless environments to avoid TCP connection timeouts.
  */
 export function getDb() {
   if (!_db) {
-    const dbUrl = process.env.POSTGRES_URL
+    // SUPABASE_POSTGRES_PRISMA_URL uses the pooler (port 6543) - required for serverless
+    // Fall back to POSTGRES_URL if not available
+    const dbUrl = process.env.SUPABASE_POSTGRES_PRISMA_URL || process.env.POSTGRES_URL
 
     if (!dbUrl) {
-      throw new Error("POSTGRES_URL environment variable is not set.")
+      throw new Error("No database URL found. Please set SUPABASE_POSTGRES_PRISMA_URL or POSTGRES_URL.")
     }
 
-    _db = postgres(dbUrl, { ssl: "require" })
+    _db = postgres(dbUrl, {
+      ssl: "require",
+      max: 1, // Limit connections for serverless
+      idle_timeout: 20,
+      connect_timeout: 10,
+    })
   }
   return _db
 }

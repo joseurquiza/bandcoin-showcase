@@ -60,8 +60,7 @@ export async function incrementAIUsage(feature: string): Promise<void> {
     VALUES (${sessionId}, ${feature}, CURRENT_DATE, 1)
     ON CONFLICT (session_id, feature, usage_date)
     DO UPDATE SET 
-      usage_count = showcase_ai_usage.usage_count + 1,
-      updated_at = NOW()
+      usage_count = showcase_ai_usage.usage_count + 1
   `
 }
 
@@ -124,8 +123,7 @@ export async function incrementUsage(sessionId: string, feature: string): Promis
     VALUES (${sessionId}, ${feature}, CURRENT_DATE, 1)
     ON CONFLICT (session_id, feature, usage_date)
     DO UPDATE SET 
-      usage_count = showcase_ai_usage.usage_count + 1,
-      updated_at = NOW()
+      usage_count = showcase_ai_usage.usage_count + 1
   `
 }
 
