@@ -1,14 +1,6 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
-import { getRequiredEnv } from "@/lib/env-validator"
-
-// Lazy-load to avoid build-time errors
-let _sql: ReturnType<typeof neon> | null = null
-function getSql() {
-  if (!_sql) _sql = neon(getRequiredEnv('DATABASE_URL'))
-  return _sql
-}
+import { getDb } from "@/lib/db"
 
 export interface SavedAsset {
   id: number
@@ -32,9 +24,9 @@ export async function saveAssetToDatabase(asset: {
   timestamp: string
 }) {
   try {
-    const sql = getSql()
+    const sql = getDb()
     const result = await sql`
-      INSERT INTO vibeportal_assets (asset_id, type, url, prompt, vibe, camera, timestamp)
+      INSERT INTO showcase_vibeportal_assets (asset_id, type, url, prompt, vibe, camera, timestamp)
       VALUES (${asset.asset_id}, ${asset.type}, ${asset.url}, ${asset.prompt}, ${asset.vibe || null}, ${asset.camera || null}, ${asset.timestamp})
       ON CONFLICT (asset_id) DO UPDATE
       SET url = EXCLUDED.url,
@@ -53,9 +45,9 @@ export async function saveAssetToDatabase(asset: {
 
 export async function loadAssetsFromDatabase(): Promise<SavedAsset[]> {
   try {
-    const sql = getSql()
+    const sql = getDb()
     const results = await sql`
-      SELECT * FROM vibeportal_assets
+      SELECT * FROM showcase_vibeportal_assets
       ORDER BY created_at DESC
       LIMIT 100
     `
@@ -68,9 +60,9 @@ export async function loadAssetsFromDatabase(): Promise<SavedAsset[]> {
 
 export async function deleteAssetFromDatabase(assetId: string) {
   try {
-    const sql = getSql()
+    const sql = getDb()
     await sql`
-      DELETE FROM vibeportal_assets
+      DELETE FROM showcase_vibeportal_assets
       WHERE asset_id = ${assetId}
     `
     return { success: true }

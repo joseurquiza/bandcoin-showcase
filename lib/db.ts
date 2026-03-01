@@ -1,9 +1,10 @@
-import { neon } from "@neondatabase/serverless"
+import postgres from "postgres"
 
-let _db: ReturnType<typeof neon> | null = null
+let _db: ReturnType<typeof postgres> | null = null
 
 /**
- * Lazy-loaded Supabase Postgres connection via Neon serverless driver.
+ * Lazy-loaded Supabase Postgres connection using the `postgres` package.
+ * Works with any standard Postgres URL including Supabase direct connections.
  * Only initializes at runtime, never during build.
  */
 export function getDb() {
@@ -14,12 +15,7 @@ export function getDb() {
       throw new Error("POSTGRES_URL environment variable is not set.")
     }
 
-    // Neon driver requires postgresql:// not postgres://
-    const normalized = dbUrl.startsWith("postgres://")
-      ? dbUrl.replace("postgres://", "postgresql://")
-      : dbUrl
-
-    _db = neon(normalized)
+    _db = postgres(dbUrl, { ssl: "require" })
   }
   return _db
 }
