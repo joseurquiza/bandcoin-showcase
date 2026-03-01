@@ -160,11 +160,6 @@ export async function generateImageWithImagenAction(
   promptText: string,
   referenceImage?: { base64Data: string; mimeType: string },
 ) {
-  const auth = await checkUserAuthentication()
-  if (!auth.isAuthenticated) {
-    throw new Error("Please connect your wallet or sign in to generate images.")
-  }
-
   const usageCheck = await checkAIUsage("vibeportal")
   if (!usageCheck.allowed) {
     throw new Error(
