@@ -198,7 +198,7 @@ export async function generateImageWithImagenAction(
 
   try {
     const response = await fetchWithTimeout(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -208,6 +208,9 @@ export async function generateImageWithImagenAction(
               parts,
             },
           ],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"],
+          },
         }),
       },
       60000, // 60 second timeout for image generation

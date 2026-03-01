@@ -1,12 +1,25 @@
-import { sql as vercelSql } from "@vercel/postgres"
+import { neon } from "@neondatabase/serverless"
+
+let _db: ReturnType<typeof neon> | null = null
 
 /**
- * Get database connection for Supabase Postgres
- * Uses @vercel/postgres which works with any Postgres database including Supabase
- * Connection is configured via POSTGRES_URL environment variable
+ * Lazy-loaded Supabase Postgres connection via Neon serverless driver.
+ * Only initializes at runtime, never during build.
  */
 export function getDb() {
-  // @vercel/postgres automatically reads from POSTGRES_URL env var
-  // and handles connection pooling
-  return vercelSql
+  if (!_db) {
+    const dbUrl = process.env.POSTGRES_URL
+
+    if (!dbUrl) {
+      throw new Error("POSTGRES_URL environment variable is not set.")
+    }
+
+    // Neon driver requires postgresql:// not postgres://
+    const normalized = dbUrl.startsWith("postgres://")
+      ? dbUrl.replace("postgres://", "postgresql://")
+      : dbUrl
+
+    _db = neon(normalized)
+  }
+  return _db
 }
