@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const sql = getDb()
     // Insert event with IP address
     await sql`
-      INSERT INTO analytics_events (
+      INSERT INTO showcase_analytics_events (
         event_type, page_path, app_name, session_id, 
         user_agent, referrer, metadata, ip_address
       ) VALUES (
