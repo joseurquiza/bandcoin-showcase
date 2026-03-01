@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowRight, ExternalLink, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { submitContactForm } from "./actions"
 
 export default function ViewOurWork() {
   const [formData, setFormData] = useState({
@@ -25,9 +26,10 @@ export default function ViewOurWork() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    // Simulate submission
-    await new Promise((r) => setTimeout(r, 1000))
-    setSubmitted(true)
+    const result = await submitContactForm(formData)
+    if (result.success) {
+      setSubmitted(true)
+    }
     setSubmitting(false)
   }
 

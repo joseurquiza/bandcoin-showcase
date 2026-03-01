@@ -28,11 +28,14 @@ import {
   Wallet,
   CheckCircle2,
   XCircle,
+  Mail,
+  ExternalLink,
 } from "lucide-react"
 import { getEscalatedSessions, getChatHistory, sendAdminMessage, resolveSession } from "@/app/support/actions"
 import { getAnalyticsSummary } from "@/app/admin/analytics-actions"
 import { verifyAdminPassword } from "@/app/admin/auth-actions"
 import { getAllWithdrawalRequests, processWithdrawal, updateWithdrawalStatus } from "./withdrawal-actions"
+import { getContactSubmissions, updateSubmissionStatus } from "@/app/examples/actions"
 
 interface Session {
   session_id: string
@@ -90,6 +93,9 @@ export default function AdminPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
   const [dateRange, setDateRange] = useState("30")
 
+  // Submissions state
+  const [submissions, setSubmissions] = useState<any[]>([])
+
   // Withdrawals state
   const [withdrawals, setWithdrawals] = useState<any[]>([])
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<any>(null)
@@ -134,6 +140,7 @@ export default function AdminPage() {
     if (isAuthenticated) {
       loadSessions()
       loadAnalytics()
+      loadSubmissions()
       const interval = setInterval(loadSessions, 5000)
       return () => clearInterval(interval)
     }
@@ -178,6 +185,18 @@ export default function AdminPage() {
       setAnalytics(result.data)
     }
     setAnalyticsLoading(false)
+  }
+
+  const loadSubmissions = async () => {
+    const result = await getContactSubmissions()
+    if (result.success) {
+      setSubmissions(result.submissions || [])
+    }
+  }
+
+  const handleUpdateSubmissionStatus = async (id: number, status: string) => {
+    await updateSubmissionStatus(id, status)
+    await loadSubmissions()
   }
 
   const loadWithdrawals = async () => {
@@ -350,6 +369,15 @@ export default function AdminPage() {
               {withdrawals.filter((w) => w.status === "pending").length > 0 && (
                 <Badge className="ml-2 bg-amber-500 text-white">
                   {withdrawals.filter((w) => w.status === "pending").length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="submissions" className="data-[state=active]:bg-purple-600">
+              <Mail className="h-4 w-4 mr-2" />
+              Submissions
+              {submissions.filter((s) => s.status === "new").length > 0 && (
+                <Badge className="ml-2 bg-green-500 text-white">
+                  {submissions.filter((s) => s.status === "new").length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -969,6 +997,118 @@ export default function AdminPage() {
                 )}
               </Card>
             </div>
+          </TabsContent>
+          {/* Submissions Tab */}
+          <TabsContent value="submissions" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-white">Contact Form Submissions</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadSubmissions}
+                className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+
+            {submissions.length === 0 ? (
+              <Card className="bg-zinc-900 border-zinc-800 p-12 text-center">
+                <Mail className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
+                <p className="text-zinc-400">No submissions yet</p>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {submissions.map((sub) => (
+                  <Card key={sub.id} className="bg-zinc-900 border-zinc-800 p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <span className="font-semibold text-white">{sub.band_name}</span>
+                          <Badge
+                            className={
+                              sub.status === "new"
+                                ? "bg-green-600 text-white"
+                                : sub.status === "contacted"
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-zinc-600 text-white"
+                            }
+                          >
+                            {sub.status}
+                          </Badge>
+                          <span className="text-xs text-zinc-500">
+                            {new Date(sub.created_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm text-zinc-400">
+                          <span>{sub.name}</span>
+                          <a
+                            href={`mailto:${sub.email}`}
+                            className="flex items-center gap-1 text-purple-400 hover:text-purple-300"
+                          >
+                            {sub.email}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                          <Badge variant="outline" className="border-zinc-700 text-zinc-300 capitalize">
+                            {sub.service_type === "epk"
+                              ? "EPK"
+                              : sub.service_type === "website"
+                                ? "Website"
+                                : sub.service_type === "both"
+                                  ? "EPK + Website"
+                                  : "Not sure"}
+                          </Badge>
+                        </div>
+
+                        {sub.message && (
+                          <p className="text-sm text-zinc-400 border-l-2 border-zinc-700 pl-3">{sub.message}</p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2 shrink-0">
+                        {sub.status !== "contacted" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleUpdateSubmissionStatus(sub.id, "contacted")}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                          >
+                            Mark Contacted
+                          </Button>
+                        )}
+                        {sub.status !== "closed" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleUpdateSubmissionStatus(sub.id, "closed")}
+                            className="border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-800 bg-transparent text-xs"
+                          >
+                            Close
+                          </Button>
+                        )}
+                        {sub.status === "closed" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleUpdateSubmissionStatus(sub.id, "new")}
+                            className="border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-800 bg-transparent text-xs"
+                          >
+                            Reopen
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
