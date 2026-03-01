@@ -1,37 +1,42 @@
+"use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, ExternalLink } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { ArrowRight, ExternalLink, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import type { Metadata } from "next"
-
-export const metadata: Metadata = {
-  title: "Portfolio Examples - EPKs & Websites We've Built",
-  description:
-    "Explore our portfolio of completed EPKs and custom websites for musicians. View live demos of HollowVox, 3 Years Hollow, Now Its Dark, and Tame The Jester.",
-  keywords: [
-    "musician EPK examples",
-    "band website portfolio",
-    "music marketing examples",
-    "EPK showcase",
-    "artist website design",
-  ],
-  openGraph: {
-    title: "Portfolio Examples - Music EPKs & Websites",
-    description: "View our completed work for musicians including EPKs and custom websites",
-    type: "website",
-  },
-}
 
 export default function ViewOurWork() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    bandName: "",
+    serviceType: "",
+    message: "",
+  })
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitting(true)
+    // Simulate submission
+    await new Promise((r) => setTimeout(r, 1000))
+    setSubmitted(true)
+    setSubmitting(false)
+  }
+
   const portfolioExamples = [
     {
       id: 1,
       title: "HollowVox",
       type: "Website",
       genre: "Crypto/Gaming",
-      price: "$250",
       description: "Futuristic Action Token platform with community features, rewards system, and gaming integration",
       image: "/images/hollowvox-logo.png",
       features: [
@@ -51,7 +56,6 @@ export default function ViewOurWork() {
       title: "3 Years Hollow",
       type: "EPK",
       genre: "Rock/Metal",
-      price: "$100",
       description: "Powerful rock anthems with crushing riffs and emotionally charged vocals",
       image: "/images/3years-hollow-band.png",
       features: ["Band Photos", "Album Showcase", "Press Coverage", "Tour Schedule", "Contact Info"],
@@ -65,7 +69,6 @@ export default function ViewOurWork() {
       title: "Now Its Dark",
       type: "EPK",
       genre: "Rock/Alternative",
-      price: "$100",
       description: "Chicago rock quartet featuring their mystical single 'NYMPH' - now streaming on all platforms",
       image: "/images/now-its-dark-portfolio.png",
       features: ["Band Profiles", "Discography", "Producer Credits", "Live History", "Social Links"],
@@ -79,7 +82,6 @@ export default function ViewOurWork() {
       title: "Tame The Jester",
       type: "Website",
       genre: "Interactive/Custom",
-      price: "$250",
       description:
         "Fully custom interactive website with game-like elements, custom animations, and immersive branding experience",
       image: "/images/tame-the-jester-album.png",
@@ -114,16 +116,13 @@ export default function ViewOurWork() {
               <Link href="/beatbuilder" className="text-white/80 hover:text-white transition-colors">
                 Beat Builder
               </Link>
-              <Link href="/#pricing" className="text-white/80 hover:text-white transition-colors">
-                Pricing
-              </Link>
-              <Link href="/#contact" className="text-white/80 hover:text-white transition-colors">
+                <Link href="/#contact" className="text-white/80 hover:text-white transition-colors">
                 Contact
               </Link>
             </nav>
-            <Link href="/order?service=epk">
-              <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">Order EPK - $100</Button>
-            </Link>
+            <a href="#get-started">
+              <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">Get Started</Button>
+            </a>
           </div>
         </div>
       </header>
@@ -139,31 +138,20 @@ export default function ViewOurWork() {
             for artists.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold text-lg px-8 py-4">
-              <Link href="#live-demos" className="flex items-center">
+            <a href="#live-demos">
+              <Button size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold text-lg px-8 py-4">
                 View Live Demos <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <div className="flex gap-2">
-              <Link href="/order?service=epk">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 text-lg px-6 py-4 bg-transparent"
-                >
-                  EPK - $100
-                </Button>
-              </Link>
-              <Link href="/order?service=website">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 text-lg px-6 py-4 bg-transparent"
-                >
-                  Website - $250
-                </Button>
-              </Link>
-            </div>
+              </Button>
+            </a>
+            <a href="#get-started">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10 text-lg px-8 py-4 bg-transparent"
+              >
+                Get Started
+              </Button>
+            </a>
           </div>
         </div>
       </section>
@@ -202,9 +190,7 @@ export default function ViewOurWork() {
                     </Badge>
                     <Badge className="bg-green-600 text-white">LIVE DEMO</Badge>
                   </div>
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-green-600 text-white font-bold">{item.price}</Badge>
-                  </div>
+
                   <div className="absolute bottom-4 left-4 right-4">
                     <h3 className="text-2xl font-bold text-white mb-2">{item.title}</h3>
                   </div>
@@ -257,32 +243,99 @@ export default function ViewOurWork() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-white mb-8">Ready to Create Your Own?</h2>
-          <p className="text-white/70 mb-8 text-lg max-w-2xl mx-auto">
-            See something you like? Let's create a custom EPK or website that perfectly represents your music and brand.
+      {/* Contact Form Section */}
+      <section id="get-started" className="py-20">
+        <div className="container mx-auto px-4 max-w-2xl">
+          <h2 className="text-4xl font-bold text-center text-white mb-4">Ready to Create Your Own?</h2>
+          <p className="text-center text-white/70 mb-10 text-lg">
+            Tell us about your project and we'll get back to you shortly.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/order?service=epk">
+
+          {submitted ? (
+            <div className="bg-white/10 border border-white/20 rounded-2xl p-12 text-center">
+              <CheckCircle className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">We got your message!</h3>
+              <p className="text-white/70">We'll be in touch with you soon to discuss your project.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="bg-white/10 border border-white/20 rounded-2xl p-8 space-y-6">
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-white">Your Name</Label>
+                  <Input
+                    id="name"
+                    required
+                    placeholder="Jane Smith"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-400"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-white">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    placeholder="jane@yourband.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-400"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bandName" className="text-white">Band / Artist Name</Label>
+                <Input
+                  id="bandName"
+                  required
+                  placeholder="Your band or artist name"
+                  value={formData.bandName}
+                  onChange={(e) => setFormData({ ...formData, bandName: e.target.value })}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-400"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="serviceType" className="text-white">What are you looking for?</Label>
+                <select
+                  id="serviceType"
+                  required
+                  value={formData.serviceType}
+                  onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                  className="w-full rounded-md border border-white/20 bg-white/10 px-3 py-2 text-white focus:border-yellow-400 focus:outline-none"
+                >
+                  <option value="" disabled className="bg-gray-900">Select a service...</option>
+                  <option value="epk" className="bg-gray-900">EPK (Electronic Press Kit)</option>
+                  <option value="website" className="bg-gray-900">Full Website</option>
+                  <option value="both" className="bg-gray-900">Both EPK + Website</option>
+                  <option value="unsure" className="bg-gray-900">Not sure yet</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="message" className="text-white">Tell us about your project</Label>
+                <Textarea
+                  id="message"
+                  rows={4}
+                  placeholder="Genre, style inspiration, any specific features you'd like, timeline, etc."
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-400 resize-none"
+                />
+              </div>
+
               <Button
+                type="submit"
+                disabled={submitting}
                 size="lg"
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-semibold text-lg px-8 py-4"
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-semibold text-lg"
               >
-                Order EPK - $100
+                {submitting ? "Sending..." : "Send Message"}
               </Button>
-            </Link>
-            <Link href="/order?service=website">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 text-lg px-8 py-4 bg-transparent"
-              >
-                Order Website - $250
-              </Button>
-            </Link>
-          </div>
+            </form>
+          )}
         </div>
       </section>
 
