@@ -1,28 +1,15 @@
 "use server"
 
-import { neon } from "@neondatabase/serverless"
+import { getDb } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 import { SignJWT, jwtVerify } from "jose"
-import { getRequiredEnv } from "@/lib/env-validator"
 import { validatePasswordStrict } from "@/lib/password-validator"
 
-// Lazy-load environment variables to avoid errors during module initialization
-let _sql: ReturnType<typeof neon> | null = null
-let _jwtSecret: Uint8Array | null = null
-
-function getSql() {
-  if (!_sql) {
-    _sql = neon(getRequiredEnv('DATABASE_URL'))
-  }
-  return _sql
-}
-
 function getJwtSecret() {
-  if (!_jwtSecret) {
-    _jwtSecret = new TextEncoder().encode(getRequiredEnv('JWT_SECRET'))
-  }
-  return _jwtSecret
+  const secret = process.env.JWT_SECRET
+  if (!secret) throw new Error("JWT_SECRET is not set")
+  return new TextEncoder().encode(secret)
 }
 
 export type VaultUser = {
@@ -43,19 +30,17 @@ export async function signUp(
   role: "artist" | "supporter" = "supporter",
 ) {
   try {
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return { success: false, error: "Invalid email format" }
     }
 
-    // Validate password strength
     const passwordValidation = validatePasswordStrict(password)
     if (!passwordValidation.isValid) {
       return { success: false, error: passwordValidation.errors[0] }
     }
 
-    const sql = getSql()
+    const sql = getDb()
     const existingUser = await sql`SELECT id FROM vault_users WHERE email = ${email}`
     if (existingUser.length > 0) {
       return { success: false, error: "Email already exists" }
@@ -71,7 +56,6 @@ export async function signUp(
 
     const user = result[0] as VaultUser
 
-    // Create artist profile if role is artist
     if (role === "artist") {
       await sql`
         INSERT INTO vault_artists (user_id, artist_name)
@@ -79,7 +63,6 @@ export async function signUp(
       `
     }
 
-    // Create session
     const token = await new SignJWT({ userId: user.id, email: user.email, role: user.role })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
@@ -87,10 +70,10 @@ export async function signUp(
       .sign(getJwtSecret())
     ;(await cookies()).set("vault_session", token, {
       httpOnly: true,
-      secure: true, // Always use secure cookies
-      sameSite: "strict", // Stricter CSRF protection
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
+      secure: true,
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
     })
 
     return { success: true, user }
@@ -102,7 +85,7 @@ export async function signUp(
 
 export async function signIn(email: string, password: string) {
   try {
-    const sql = getSql()
+    const sql = getDb()
     const result = await sql`
       SELECT id, email, password_hash, display_name, role, wallet_address, wallet_type, stellar_public_key, avatar_url
       FROM vault_users
@@ -127,10 +110,10 @@ export async function signIn(email: string, password: string) {
       .sign(getJwtSecret())
     ;(await cookies()).set("vault_session", token, {
       httpOnly: true,
-      secure: true, // Always use secure cookies
-      sameSite: "strict", // Stricter CSRF protection
+      secure: true,
+      sameSite: "strict",
       maxAge: 60 * 60 * 24 * 7,
-      path: '/',
+      path: "/",
     })
 
     return {
@@ -162,23 +145,19 @@ export async function getCurrentUser(): Promise<VaultUser | null> {
     const cookieStore = await cookies()
     const token = cookieStore.get("vault_session")?.value
 
-    if (!token) {
-      return null
-    }
+    if (!token) return null
 
     const verified = await jwtVerify(token, getJwtSecret())
     const { userId } = verified.payload as { userId: number }
 
-    const sql = getSql()
+    const sql = getDb()
     const result = await sql`
       SELECT id, email, display_name, role, wallet_address, wallet_type, stellar_public_key, avatar_url
       FROM vault_users
       WHERE id = ${userId}
     `
 
-    if (result.length === 0) {
-      return null
-    }
+    if (result.length === 0) return null
 
     return result[0] as VaultUser
   } catch (error) {
@@ -195,9 +174,8 @@ export async function updateWalletAddress(walletAddress: string, walletType: "et
       return { success: false, error: "Not authenticated" }
     }
 
-    const sql = getSql()
-    
-    // Validate wallet address format
+    const sql = getDb()
+
     if (walletType === "ethereum") {
       if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
         return { success: false, error: "Invalid Ethereum address format" }
