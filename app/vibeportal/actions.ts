@@ -178,8 +178,19 @@ export async function generateImageWithImagenAction(
   console.log("[v0] Prompt:", promptText.substring(0, 100))
   console.log("[v0] Has reference image:", !!referenceImage)
 
+  // Inject aspect ratio into the prompt since Gemini API doesn't support it as a config param
+  const aspectRatioMap: Record<string, string> = {
+    "1:1": "square (1:1 aspect ratio)",
+    "4:3": "landscape (4:3 aspect ratio)",
+    "3:4": "portrait (3:4 aspect ratio)",
+    "16:9": "widescreen (16:9 aspect ratio)",
+    "9:16": "vertical/story (9:16 aspect ratio)",
+  }
+  const aspectLabel = aspectRatioMap[aspectRatio] ?? aspectRatio
+  const fullPrompt = `${promptText}\n\nIMPORTANT: Generate this image in ${aspectLabel} format.`
+
   // Build the request parts
-  const parts: any[] = [{ text: promptText }]
+  const parts: any[] = [{ text: fullPrompt }]
 
   if (referenceImage) {
     console.log("[v0] Reference image type:", referenceImage.mimeType)
@@ -206,7 +217,6 @@ export async function generateImageWithImagenAction(
           ],
           generationConfig: {
             responseModalities: ["TEXT", "IMAGE"],
-            aspectRatio,
           },
         }),
       },
