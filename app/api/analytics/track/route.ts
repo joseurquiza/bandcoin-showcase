@@ -46,12 +46,12 @@ export async function POST(request: NextRequest) {
 
     // Upsert session with IP address
     await sql`
-      INSERT INTO analytics_sessions (session_id, user_agent, device_type, browser, os, ip_address)
+      INSERT INTO showcase_analytics_sessions (session_id, user_agent, device_type, browser, os, ip_address)
       VALUES (${sessionId}, ${userAgent || null}, ${deviceType}, ${browser}, ${os}, ${ipAddress})
       ON CONFLICT (session_id) DO UPDATE SET
         last_seen = CURRENT_TIMESTAMP,
-        page_views = analytics_sessions.page_views + 1,
-        ip_address = COALESCE(analytics_sessions.ip_address, ${ipAddress})
+        page_views = showcase_analytics_sessions.page_views + 1,
+        ip_address = COALESCE(showcase_analytics_sessions.ip_address, ${ipAddress})
     `
 
     return NextResponse.json({ success: true })

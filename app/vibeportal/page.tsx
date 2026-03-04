@@ -122,6 +122,7 @@ const VibePortal = () => {
   const [showInfo, setShowInfo] = useState(false)
   const [progress, setProgress] = useState(0) // Added progress state
   const [hoveredCamera, setHoveredCamera] = useState<string | null>(null)
+  const [aspectRatio, setAspectRatio] = useState("1:1")
 
   // Animation/Video Sim State
   const [isPlaying, setIsPlaying] = useState(false)
@@ -386,17 +387,13 @@ const VibePortal = () => {
       if (mode === "image") {
         if (referenceMode === "transform" && referenceImage && referencePreview) {
           const base64Data = referencePreview.split(",")[1]
-          const mimeType = referenceImage.type || "image/jpeg" // Fallback to image/jpeg
-          result = await generateImageWithImagenAction(finalPrompt, {
-            base64Data,
-            mimeType,
-          })
+          const mimeType = referenceImage.type || "image/jpeg"
+          result = await generateImageWithImagenAction(finalPrompt, { base64Data, mimeType }, aspectRatio)
         } else {
-          result = await generateImageWithImagenAction(finalPrompt)
+          result = await generateImageWithImagenAction(finalPrompt, undefined, aspectRatio)
         }
       } else {
-        // Handle video generation logic here if needed
-        result = await generateImageWithImagenAction(finalPrompt) // Placeholder for video
+        result = await generateImageWithImagenAction(finalPrompt, undefined, aspectRatio)
       }
 
       if (result) {
@@ -817,6 +814,43 @@ const VibePortal = () => {
                   />
                 </div>
               )}
+
+              {/* Aspect Ratio Selector */}
+              <div className="space-y-3">
+                <Label className="text-white">Dimensions</Label>
+                <div className="grid grid-cols-5 gap-2">
+                  {[
+                    { label: "1:1", desc: "Square", w: 24, h: 24 },
+                    { label: "4:3", desc: "Standard", w: 24, h: 18 },
+                    { label: "3:4", desc: "Portrait", w: 18, h: 24 },
+                    { label: "16:9", desc: "Wide", w: 28, h: 16 },
+                    { label: "9:16", desc: "Story", w: 16, h: 28 },
+                  ].map(({ label, desc, w, h }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setAspectRatio(label)}
+                      className={`flex flex-col items-center gap-2 p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+                        aspectRatio === label
+                          ? "border-yellow-500 bg-yellow-500/20"
+                          : "border-white/10 bg-black/20 hover:border-white/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-center h-8">
+                        <div
+                          className={`rounded border-2 ${aspectRatio === label ? "border-yellow-400" : "border-white/40"}`}
+                          style={{ width: `${w * 0.55}px`, height: `${h * 0.55}px` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-mono text-white/80">{label}</span>
+                      <span className="text-[9px] text-white/40">{desc}</span>
+                      {aspectRatio === label && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border-2 border-black" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Remix Variety Slider */}
               <div className="mb-6 px-1">

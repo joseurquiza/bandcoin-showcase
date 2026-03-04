@@ -159,6 +159,7 @@ export async function extractStyleFromImageAction(base64Data: string, mimeType: 
 export async function generateImageWithImagenAction(
   promptText: string,
   referenceImage?: { base64Data: string; mimeType: string },
+  aspectRatio: string = "1:1",
 ) {
   const usageCheck = await checkAIUsage("vibeportal")
   if (!usageCheck.allowed) {
@@ -205,6 +206,7 @@ export async function generateImageWithImagenAction(
           ],
           generationConfig: {
             responseModalities: ["TEXT", "IMAGE"],
+            aspectRatio,
           },
         }),
       },
