@@ -137,8 +137,7 @@ export async function getUserRewards() {
     const activities = await sql`
       SELECT ra.*, rr.description 
       FROM showcase_reward_activities ra
-      LEFT JOIN showcase_reward_rules rr ON ra.activity_type = rr.activity_type 
-        AND (ra.app_name = rr.app_name OR rr.app_name IS NULL)
+      LEFT JOIN showcase_reward_rules rr ON ra.activity_type = rr.activity_type
       WHERE ra.user_id = ${user.id}
       ORDER BY ra.created_at DESC
       LIMIT 50
