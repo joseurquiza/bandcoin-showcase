@@ -52,9 +52,7 @@ export async function trackActivity(activityType: string, appName: string | null
     // Check if activity is eligible for rewards
     const rules = await sql`
       SELECT * FROM showcase_reward_rules 
-      WHERE activity_type = ${activityType} 
-      AND (app_name = ${appName} OR app_name IS NULL)
-      AND is_active = true
+      WHERE activity_type = ${activityType}
     `
 
     if (rules.length === 0) return { success: false, message: "No reward rule found" }
@@ -62,22 +60,21 @@ export async function trackActivity(activityType: string, appName: string | null
     const rule = rules[0]
 
     // Check daily limit for specific activity
-    if (rule.max_per_day) {
+    if (rule.daily_limit) {
       const todayActivities = await sql`
         SELECT COUNT(*) as count 
         FROM showcase_reward_activities 
         WHERE user_id = ${user.id} 
         AND activity_type = ${activityType}
-        AND app_name = ${appName}
         AND created_at >= ${today.toISOString()}
       `
 
-      if (Number.parseInt(todayActivities[0].count) >= rule.max_per_day) {
+      if (Number.parseInt(todayActivities[0].count) >= rule.daily_limit) {
         return { success: false, message: "Daily limit reached", tokensEarned: 0 }
       }
     }
 
-    let tokensToAward = Number.parseFloat(rule.tokens_awarded)
+    let tokensToAward = Number.parseFloat(rule.tokens_per_action)
     const remainingDaily = 1000 - dailyTotal
 
     if (tokensToAward > remainingDaily) {
