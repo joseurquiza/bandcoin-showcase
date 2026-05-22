@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
 import { checkUserAuthentication } from "@/lib/auth-check"
 import { checkAIUsage, incrementAIUsage } from "@/lib/ai-usage-limiter"
 
@@ -69,7 +68,7 @@ Toms and cymbals:
 `
 
     const { text } = await generateText({
-      model: openai("gpt-4o"),
+      model: "openai/gpt-4o-mini",
       system: systemPrompt,
       prompt: `Create a ${genre || "custom"} drum pattern with ${stepsCount} steps. ${prompt || ""}`,
       temperature: 0.8,
