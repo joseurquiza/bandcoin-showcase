@@ -260,26 +260,6 @@ export async function getPublicCollectibles(): Promise<{ success: boolean; colle
   }
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 30000) {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    })
-    clearTimeout(timeout)
-    return response
-  } catch (error) {
-    clearTimeout(timeout)
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error(`Request timed out after ${timeoutMs}ms`)
-    }
-    throw error
-  }
-}
-
 export async function generateCollectibleImage(
   promptText: string,
   referenceImage?: { base64Data: string; mimeType: string },
