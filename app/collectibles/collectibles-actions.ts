@@ -284,93 +284,32 @@ export async function generateCollectibleImage(
   promptText: string,
   referenceImage?: { base64Data: string; mimeType: string },
 ): Promise<{ success: boolean; imageUrls?: string[]; error?: string; remaining?: number }> {
-  const apiKey = process.env.GEMINI_API_KEY
-
-  if (!apiKey) {
-    return {
-      success: false,
-      error: "GEMINI_API_KEY not configured",
-    }
-  }
-
-  console.log("[v0] Starting Gemini collectible image generation (1 image)...")
-  console.log("[v0] Prompt:", promptText.substring(0, 100))
-  console.log("[v0] Has reference image:", !!referenceImage)
-
-  const parts: any[] = [{ text: promptText }]
-
-  if (referenceImage) {
-    console.log("[v0] Reference image type:", referenceImage.mimeType)
-    console.log("[v0] Reference image size:", referenceImage.base64Data.length, "bytes")
-    parts.push({
-      inlineData: {
-        mimeType: referenceImage.mimeType,
-        data: referenceImage.base64Data,
-      },
-    })
-  }
-
   try {
-    const response = await fetchWithTimeout(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: promptText },
-                ...(referenceImage
-                  ? [
-                      {
-                        inlineData: {
-                          mimeType: referenceImage.mimeType,
-                          data: referenceImage.base64Data,
-                        },
-                      },
-                    ]
-                  : []),
-              ],
-            },
-          ],
-        }),
-      },
-      60000,
-    )
-
-    console.log("[v0] Response status:", response.status)
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error("[v0] API error response:", errorText)
-      return {
-        success: false,
-        error: "Failed to generate image",
-      }
+    const userContent: any[] = [{ type: "text", text: promptText }]
+    if (referenceImage) {
+      userContent.push({
+        type: "file",
+        data: `data:${referenceImage.mimeType};base64,${referenceImage.base64Data}`,
+        mediaType: referenceImage.mimeType,
+      })
     }
 
-    const data = await response.json()
+    const result = await generateText({
+      model: "google/gemini-3.1-flash-image-preview",
+      messages: [{ role: "user", content: userContent }],
+    })
 
-    if (data.error) {
-      console.error("[v0] API error:", data.error)
-      return {
-        success: false,
-        error: data.error.message || "Failed to generate image",
-      }
-    }
-
-    const imagePart = data.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)
-
-    if (!imagePart?.inlineData?.data) {
+    const imageFile = result.files?.find((f: any) => f.mediaType?.startsWith("image/"))
+    if (!imageFile) {
       return {
         success: false,
         error: "No image data in response",
       }
     }
 
-    const imageUrl = `data:image/png;base64,${imagePart.inlineData.data}`
-    console.log("[v0] Image generated successfully")
+    const mediaType = imageFile.mediaType || "image/png"
+    const base64 = imageFile.base64 ?? ""
+    const imageUrl = `data:${mediaType};base64,${base64}`
 
     return {
       success: true,

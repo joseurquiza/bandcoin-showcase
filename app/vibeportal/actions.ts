@@ -1,42 +1,19 @@
 "use server"
 
-// Server actions for VibePortal to keep API keys secure
+// Server actions for VibePortal — uses Vercel AI Gateway
 
+import { generateText } from "ai"
 import { checkUserAuthentication } from "@/lib/auth-check"
 import { checkAIUsage, incrementAIUsage } from "@/lib/ai-usage-limiter"
 
-async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 30000) {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    })
-    clearTimeout(timeout)
-    return response
-  } catch (error) {
-    clearTimeout(timeout)
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error(`Request timed out after ${timeoutMs}ms`)
-    }
-    throw error
-  }
-}
+const TEXT_MODEL = "google/gemini-3-flash"
+const IMAGE_MODEL = "google/gemini-3.1-flash-image-preview"
 
 export async function randomizePromptAction(prompt: string, remixVariety: number) {
-  const apiKey = process.env.GEMINI_API_KEY
-
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY not configured")
-  }
-
   let instruction = ""
   let content = ""
 
   if (prompt.trim()) {
-    // Dynamic instruction based on Remix Variety slider
     if (remixVariety < 33) {
       instruction =
         "You are a precision prompt editor. Your task is to take the provided image prompt and change ONLY 1 specific detail (such as a material, a location, or a color) while keeping the rest of the text, sentence structure, artistic style, and camera settings EXACTLY the same. Do not summarize or shorten the prompt. Return the full modified prompt."
@@ -55,25 +32,11 @@ export async function randomizePromptAction(prompt: string, remixVariety: number
   }
 
   try {
-    const response = await fetchWithTimeout(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: `${instruction}\n\n${content}` }],
-            },
-          ],
-        }),
-      },
-    )
-
-    const data = await response.json()
-    if (data.error) throw new Error(data.error.message)
-
-    return data.candidates[0].content.parts[0].text.trim()
+    const { text } = await generateText({
+      model: TEXT_MODEL,
+      prompt: `${instruction}\n\n${content}`,
+    })
+    return text.trim()
   } catch (error) {
     console.error("[v0] Randomize prompt error:", error)
     throw error
@@ -81,12 +44,6 @@ export async function randomizePromptAction(prompt: string, remixVariety: number
 }
 
 export async function refinePromptAction(prompt: string) {
-  const apiKey = process.env.GEMINI_API_KEY
-
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY not configured")
-  }
-
   const instruction =
     "You are an expert photographer and prompt engineer. Your task is to enhance the user's prompt to be more descriptive, vivid, and effective for high-quality image generation. Improve the vocabulary, specify lighting and textures, and correct any clarity issues. CRITICAL: Do NOT change the subject matter, the artistic style (if specified), or the core meaning. Just make the existing idea sound professional and 'high fidelity'. Keep it under 50 words."
   const content = prompt.trim()
@@ -94,25 +51,11 @@ export async function refinePromptAction(prompt: string) {
     : "Generate a highly detailed, professional photography prompt for a random beautiful scene."
 
   try {
-    const response = await fetchWithTimeout(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: `${instruction}\n\n${content}` }],
-            },
-          ],
-        }),
-      },
-    )
-
-    const data = await response.json()
-    if (data.error) throw new Error(data.error.message)
-
-    return data.candidates[0].content.parts[0].text.trim()
+    const { text } = await generateText({
+      model: TEXT_MODEL,
+      prompt: `${instruction}\n\n${content}`,
+    })
+    return text.trim()
   } catch (error) {
     console.error("[v0] Refine prompt error:", error)
     throw error
@@ -120,36 +63,27 @@ export async function refinePromptAction(prompt: string) {
 }
 
 export async function extractStyleFromImageAction(base64Data: string, mimeType: string) {
-  const apiKey = process.env.GEMINI_API_KEY
-
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY not configured")
-  }
-
   try {
-    const response = await fetchWithTimeout(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
+    const { text } = await generateText({
+      model: TEXT_MODEL,
+      messages: [
+        {
+          role: "user",
+          content: [
             {
-              parts: [
-                {
-                  text: "Analyze this image's artistic style, color palette, lighting, texture, and medium in extreme detail. Provide a paragraph describing ONLY the visual style so an AI can replicate this 'vibe' perfectly. Do not describe the subject matter unless it is integral to the style (e.g. 'cyberpunk').",
-                },
-                { inlineData: { mimeType, data: base64Data } },
-              ],
+              type: "text",
+              text: "Analyze this image's artistic style, color palette, lighting, texture, and medium in extreme detail. Provide a paragraph describing ONLY the visual style so an AI can replicate this 'vibe' perfectly. Do not describe the subject matter unless it is integral to the style (e.g. 'cyberpunk').",
+            },
+            {
+              type: "file",
+              data: `data:${mimeType};base64,${base64Data}`,
+              mediaType: mimeType,
             },
           ],
-        }),
-      },
-    )
-
-    const data = await response.json()
-    if (data.error) throw new Error(data.error.message)
-    return data.candidates[0].content.parts[0].text
+        },
+      ],
+    })
+    return text
   } catch (error) {
     console.error("[v0] Extract style from image error:", error)
     throw error
@@ -168,48 +102,43 @@ export async function generateImageWithImagenAction(
     )
   }
 
-  const apiKey = process.env.GEMINI_API_KEY
-
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY not configured")
+  const aspectRatioMap: Record<string, string> = {
+    "1:1": "square (1:1 aspect ratio)",
+    "4:3": "landscape (4:3 aspect ratio)",
+    "3:4": "portrait (3:4 aspect ratio)",
+    "16:9": "widescreen (16:9 aspect ratio)",
+    "9:16": "vertical/story (9:16 aspect ratio)",
   }
+  const aspectLabel = aspectRatioMap[aspectRatio] ?? aspectRatio
+  const fullPrompt = `${promptText}\n\nIMPORTANT: Generate this image in ${aspectLabel} format.`
 
   try {
-    const response = await fetchWithTimeout(
-      `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          instances: [{ prompt: promptText }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio,
-          },
-        }),
-      },
-      60000,
-    )
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`API error: ${response.status} - ${errorText}`)
+    const userContent: any[] = [{ type: "text", text: fullPrompt }]
+    if (referenceImage) {
+      userContent.push({
+        type: "file",
+        data: `data:${referenceImage.mimeType};base64,${referenceImage.base64Data}`,
+        mediaType: referenceImage.mimeType,
+      })
     }
 
-    const data = await response.json()
+    const result = await generateText({
+      model: IMAGE_MODEL,
+      messages: [{ role: "user", content: userContent }],
+    })
 
-    if (data.error) {
-      throw new Error(data.error.message)
-    }
-
-    const imageBytes = data.predictions?.[0]?.bytesBase64Encoded
-    if (!imageBytes) {
+    // Extract image from generated files
+    const imageFile = result.files?.find((f: any) => f.mediaType?.startsWith("image/"))
+    if (!imageFile) {
       throw new Error("No image data in response")
     }
 
+    const mediaType = imageFile.mediaType || "image/png"
+    const base64 = imageFile.base64 ?? ""
+
     await incrementAIUsage("vibeportal")
 
-    return `data:image/png;base64,${imageBytes}`
+    return `data:${mediaType};base64,${base64}`
   } catch (error) {
     console.error("[v0] Image generation error:", error)
     throw error
