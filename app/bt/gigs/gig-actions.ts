@@ -3,6 +3,7 @@
 import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
 import { verify } from "jsonwebtoken"
+import { getRequiredEnv } from "@/lib/env-validator"
 
 async function getCurrentProfile() {
   const cookieStore = await cookies()
@@ -13,7 +14,7 @@ async function getCurrentProfile() {
   }
 
   try {
-    const decoded = verify(token, process.env.VAULT_JWT_SECRET!) as { profileId: number }
+    const decoded = verify(token, getRequiredEnv("VAULT_JWT_SECRET")) as { profileId: number }
     const profiles = await sql`SELECT * FROM bt_profiles WHERE id = ${decoded.profileId}`
     return profiles[0] || null
   } catch {

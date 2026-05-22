@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db"
 import { stellarVault } from "@/lib/stellar-vault"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
+import { getRequiredEnv } from "@/lib/env-validator"
 
 async function getUserFromToken() {
   const cookieStore = await cookies()
@@ -13,7 +14,7 @@ async function getUserFromToken() {
     throw new Error("Not authenticated")
   }
 
-  const secret = new TextEncoder().encode(process.env.VAULT_JWT_SECRET!)
+  const secret = new TextEncoder().encode(getRequiredEnv("VAULT_JWT_SECRET"))
   const { payload } = await jwtVerify(token.value, secret)
 
   return payload

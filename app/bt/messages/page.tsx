@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { verify } from "jsonwebtoken"
 import { MessagesClient } from "./messages-client"
+import { getRequiredEnv } from "@/lib/env-validator"
 
 async function getCurrentProfile() {
   const cookieStore = await cookies()
@@ -12,7 +13,7 @@ async function getCurrentProfile() {
   }
 
   try {
-    const decoded = verify(token, process.env.VAULT_JWT_SECRET!) as { profileId: number }
+    const decoded = verify(token, getRequiredEnv("VAULT_JWT_SECRET")) as { profileId: number }
     return decoded.profileId
   } catch {
     return null

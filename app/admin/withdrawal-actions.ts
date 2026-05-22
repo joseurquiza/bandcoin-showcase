@@ -3,8 +3,7 @@
 import { getDb } from "@/lib/db"
 import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
-
-const JWT_SECRET = process.env.VAULT_JWT_SECRET || "your-secret-key"
+import { getRequiredEnv } from "@/lib/env-validator"
 
 async function getAdminUser() {
   const cookieStore = await cookies()
@@ -13,7 +12,7 @@ async function getAdminUser() {
   if (!token) return null
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const decoded = jwt.verify(token, getRequiredEnv("VAULT_JWT_SECRET")) as any
     if (decoded.role !== "admin") return null
 
     const sql = getDb()
