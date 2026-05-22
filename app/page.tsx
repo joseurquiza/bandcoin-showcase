@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Music, Sparkles, Globe, Briefcase, Radio, Wand2, FileText, MapPin, Wallet, Gift } from "lucide-react"
+import { Sparkles, Globe, Briefcase, Radio, FileText, MapPin, Wallet, Gift } from "lucide-react"
 import { useState, useEffect } from "react"
 import StarWarsOnboarding from "@/components/star-wars-onboarding"
 

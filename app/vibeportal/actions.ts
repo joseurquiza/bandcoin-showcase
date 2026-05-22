@@ -174,76 +174,42 @@ export async function generateImageWithImagenAction(
     throw new Error("GEMINI_API_KEY not configured")
   }
 
-  console.log("[v0] Starting Gemini image generation...")
-  console.log("[v0] Prompt:", promptText.substring(0, 100))
-  console.log("[v0] Has reference image:", !!referenceImage)
-
-  // Build the request parts
-  const parts: any[] = [{ text: promptText }]
-
-  if (referenceImage) {
-    console.log("[v0] Reference image type:", referenceImage.mimeType)
-    console.log("[v0] Reference image size:", referenceImage.base64Data.length, "bytes")
-    parts.push({
-      inlineData: {
-        mimeType: referenceImage.mimeType,
-        data: referenceImage.base64Data,
-      },
-    })
-  }
-
   try {
     const response = await fetchWithTimeout(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts,
-            },
-          ],
-          generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"],
+          instances: [{ prompt: promptText }],
+          parameters: {
+            sampleCount: 1,
             aspectRatio,
           },
         }),
       },
-      60000, // 60 second timeout for image generation
+      60000,
     )
-
-    console.log("[v0] Response status:", response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error("[v0] API error response:", errorText)
       throw new Error(`API error: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
-    console.log("[v0] Response data keys:", Object.keys(data))
 
     if (data.error) {
-      console.error("[v0] API error:", data.error)
       throw new Error(data.error.message)
     }
 
-    // Extract the base64 image from the response
-    const imagePart = data.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)
-
-    if (!imagePart?.inlineData?.data) {
-      console.error(
-        "[v0] No image data in response. Response structure:",
-        JSON.stringify(data, null, 2).substring(0, 500),
-      )
+    const imageBytes = data.predictions?.[0]?.bytesBase64Encoded
+    if (!imageBytes) {
       throw new Error("No image data in response")
     }
 
     await incrementAIUsage("vibeportal")
 
-    console.log("[v0] Image generated successfully, size:", imagePart.inlineData.data.length, "bytes")
-    return `data:image/png;base64,${imagePart.inlineData.data}`
+    return `data:image/png;base64,${imageBytes}`
   } catch (error) {
     console.error("[v0] Image generation error:", error)
     throw error
