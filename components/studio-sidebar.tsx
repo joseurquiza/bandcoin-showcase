@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, HelpCircle, Globe, ExternalLink } from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, HelpCircle, ExternalLink } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -153,14 +153,6 @@ export default function StudioSidebar() {
     //   href: "/vault",
     //   gradient: "from-amber-500 to-orange-600",
     // },
-    // Services
-    {
-      id: "websites-epks",
-      name: "Websites & EPKs",
-      icon: Globe,
-      href: "/examples",
-      gradient: "from-cyan-400 to-blue-500",
-    },
     // Tools
     {
       id: "stemplayer",
