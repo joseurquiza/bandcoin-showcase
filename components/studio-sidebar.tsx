@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, Gem, HelpCircle, ExternalLink } from "lucide-react"
+import { Sparkles, Radio, Home, Menu, X, FileText, MapPin, Users, Coins, HelpCircle, ExternalLink } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 export default function StudioSidebar() {
@@ -96,20 +96,6 @@ export default function StudioSidebar() {
       external: true,
     },
     // Content/Creation
-    {
-      id: "collectibles",
-      name: "Collectibles",
-      icon: Gem,
-      href: "/collectibles",
-      gradient: "from-purple-500 to-pink-600",
-    },
-    {
-      id: "my-collection",
-      name: "My Collection",
-      icon: Gem,
-      href: "/my-collection",
-      gradient: "from-purple-400 to-pink-500",
-    },
     // {
     //   id: "merch",
     //   name: "Merch Store",
@@ -138,13 +124,6 @@ export default function StudioSidebar() {
       icon: Coins,
       href: "/buy-bandcoin",
       gradient: "from-green-400 to-emerald-500",
-    },
-    {
-      id: "rewards",
-      name: "Rewards",
-      icon: Coins,
-      href: "/rewards",
-      gradient: "from-amber-400 to-orange-500",
     },
     // {
     //   id: "vault",
