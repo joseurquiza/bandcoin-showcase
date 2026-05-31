@@ -6,11 +6,11 @@ import { Wallet, CheckCircle2 } from "lucide-react"
 import { updateWalletAddress } from "@/app/vault/auth-actions"
 import { toast } from "sonner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useFreighter } from "@/hooks/use-freighter"
 
 declare global {
   interface Window {
     ethereum?: any
-    freighterApi?: any
   }
 }
 
@@ -26,6 +26,7 @@ export default function WalletConnect({
   const [address, setAddress] = useState<string | null>(initialAddress)
   const [connecting, setConnecting] = useState(false)
   const [selectedChain, setSelectedChain] = useState<ChainType>(initialChain)
+  const freighter = useFreighter()
 
   useEffect(() => {
     if (typeof window !== "undefined" && initialAddress) {
@@ -73,25 +74,11 @@ export default function WalletConnect({
   }
 
   const connectStellar = async () => {
-    if (typeof window === "undefined") {
-      toast.error("Browser not supported")
-      return
-    }
-
-    // Check for Freighter wallet
-    const isFreighterInstalled = await window.freighterApi?.isConnected()
-
-    if (!isFreighterInstalled) {
-      toast.error("Freighter Wallet not detected", {
-        description: "Please install Freighter to connect your Stellar wallet",
-      })
-      return
-    }
-
     setConnecting(true)
 
     try {
-      const publicKey = await window.freighterApi.getPublicKey()
+      // useFreighter handles extension detection + requestAccess in one step
+      const publicKey = await freighter.connect()
 
       setAddress(publicKey)
       setSelectedChain("stellar")
@@ -108,7 +95,7 @@ export default function WalletConnect({
     } catch (error: any) {
       console.error("Stellar wallet connection error:", error)
       toast.error("Connection failed", {
-        description: error.message || "Failed to connect Stellar wallet",
+        description: error.message || "Failed to connect Freighter. Please ensure the extension is installed and unlocked.",
       })
     } finally {
       setConnecting(false)
